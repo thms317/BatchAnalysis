@@ -34,6 +34,7 @@ def calc_force(i):
 
 # worm-like chain
 def WLC(f, p, L, S, x0):
+    kBT = 4.114
     return (L * (1 - 0.5 * (np.sqrt(kBT / (f * p))) + f / S)) / 1000 + x0
 
 # median filter
@@ -158,7 +159,7 @@ x0 = 0  # offset (nm)
 
 
 # paths
-data_path = "C:\\Users\\brouw\\Desktop\\"
+data_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
 subfolder = "Measurements of 20171201"
 analysis_path = data_path + subfolder+"\\"
 if not os.path.exists(analysis_path):

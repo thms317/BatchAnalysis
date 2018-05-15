@@ -160,7 +160,7 @@ x0 = 0  # offset (nm)
 
 
 # paths
-data_path = "C:\\Users\\brouw\\Desktop\\"
+data_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
 subfolder = "DNA mono 601 - 5-10"
 analysis_path = data_path + subfolder+"\\"
 if not os.path.exists(analysis_path):
