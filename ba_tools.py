@@ -49,7 +49,7 @@ def read_analyze(measurement, pars):
         # correcting the drift using self
         drift = func.drift_self(Z, time)
         Z = Z - (drift / 1000) * time
-        p['drift'] = str(round(drift,3)) + " nm/s"
+        p['drift'] = str(round(drift, 3)) + " nm/s"
     else:
         p['drift'] = 'uncorrected'
 
@@ -84,6 +84,7 @@ def read_analyze(measurement, pars):
 
     return f_pull, z_pull, f_release, z_release, title
 
+
 def read_fitfiles(fitfile_path, fitfile, pars):
     try:
         p = pars
@@ -94,7 +95,7 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     #  laptop or work PC
     bool = os.path.isdir(fitfile_path)
     if bool == False:
-        fitfile_path = fitfile_path.replace("tbrouwer","brouw")
+        fitfile_path = fitfile_path.replace("tbrouwer", "brouw")
 
     # open data
     file_all = fitfile_path + fitfile
@@ -107,14 +108,38 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     z = np.array(df['z (um)'])
     z_fit = np.array(df['z fit (um)'])
 
+    # # transitions
+    # trans_number = int(df.columns[-1][3:])  # number of transitions
+    # t1 = df.columns.get_loc("T1_0")  # locations
+    # t2 = df.columns.get_loc("T2_0")
+    # t3 = df.columns.get_loc("T3_0")
+    # T1 = np.array(df.iloc[:, t1:1 + trans_number + t1])  # transitions
+    # T2 = np.array(df.iloc[:, t2:1 + trans_number + t2])
+    # T3 = np.array(df.iloc[:, t3:1 + trans_number + t3])
+    # transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
+    # f_trans = force
+
     # calculating the mask
-    # rupt, mask, test = filter_rupture(fitfile, test=True)
+    # rupt, mask, test = filter_rupture(fitfile, test=True)  # use to check if results do not make sense
     rupt, mask = filter_rupture(fitfile)
 
     time = time[mask == 1]
     force = force[mask == 1]
     z = z[mask == 1]
     z_fit = z_fit[mask == 1]
+
+    # transitions
+    trans_number = int(df.columns[-1][3:])  # number of transitions
+    t1 = df.columns.get_loc("T1_0")  # locations
+    t2 = df.columns.get_loc("T2_0")
+    t3 = df.columns.get_loc("T3_0")
+    T1 = np.array(df.iloc[:, t1:1 + trans_number + t1])  # transitions
+    T2 = np.array(df.iloc[:, t2:1 + trans_number + t2])
+    T3 = np.array(df.iloc[:, t3:1 + trans_number + t3])
+    T1 = T1[mask == 1]  # filter the transitions
+    T2 = T2[mask == 1]
+    T3 = T3[mask == 1]
+    transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
 
     # calculating the first derivative of force
     dx = np.diff(time)
@@ -128,13 +153,11 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
     z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
     z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-    # time_pull = time[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-    # time_release = time[np.where((diff_force < factor) & (time > 75) & (time < 125))]
 
-    return f_pull, f_release, z_pull, z_release, z_fit_pull
+    return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, force
+
 
 def filter_rupture(fitfile, test=False):
-
     #  laptop or work PC
     folder = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
     bool = os.path.isdir(folder)
@@ -143,7 +166,7 @@ def filter_rupture(fitfile, test=False):
 
     # open data
     file_location = folder + str(fitfile[:6]) + "\\"
-    file_name = str(fitfile[7:15])+".dat"
+    file_name = str(fitfile[7:15]) + ".dat"
     bead = fitfile[16:-4]
 
     # because of this annoying bug in the LabVIEW program, offset bead no. by 2
@@ -154,7 +177,7 @@ def filter_rupture(fitfile, test=False):
     title = fitfile[:-4]
 
     # read DataFrame
-    df = pd.read_csv(file_location+file_name, sep="\t")
+    df = pd.read_csv(file_location + file_name, sep="\t")
 
     time = np.array(df['Time (s)'])
     amplitude = np.array(df['Amp' + str(bead) + ' (a.u.)'])

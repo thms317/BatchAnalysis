@@ -17,6 +17,7 @@ def default_pars():
     pars['NRL'] = "168x16"  # Nucleosome Repeat Length
     pars['drift'] = []
     pars['save'] = True
+    pars['transitions'] = True
     return pars
 
 
@@ -66,6 +67,8 @@ def main():
 
 def main_fitfiles():
 
+    plot_transitions = p['transitions']
+
     fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Fitfiles\\"
 
     fitfiles = []
@@ -75,9 +78,15 @@ def main_fitfiles():
 
     for fitfile in fitfiles:
 
-        f_pull, f_release, z_pull, z_release, z_fit_pull = ba.read_fitfiles(fitfile_path, fitfile, p)
+        f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, f_trans = ba.read_fitfiles(fitfile_path, fitfile, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
+
+        if plot_transitions:
+            for t in range(len(np.transpose(transitions[0]))):
+                # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
+                # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
+                plt.plot(np.transpose(transitions[2])[t],f_trans,'--',color='lightgrey')  # transition 3
 
         plt.ylabel('F (pN)')
         plt.xlabel('z (nm)')
@@ -122,4 +131,4 @@ def main_assemble_pars():
 if __name__ == "__main__":
     # main()
     main_fitfiles()
-    main_assemble_pars()
+    # main_assemble_pars()
