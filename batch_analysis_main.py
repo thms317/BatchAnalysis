@@ -31,44 +31,6 @@ def main():
     measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
 
     for measurement in measurements:
-        f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
-        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
-        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
-
-        plt.ylabel('F (pN)')
-        plt.xlabel('z (nm)')
-        plt.tick_params(direction='in', top=True, right=True)
-        plt.ylim(-1, 65)
-        plt.xlim(500, 2300)
-
-        plt.scatter(1000 * z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
-        plt.scatter(1000 * z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
-        plt.plot(wlc, f_wlc, '--', color="black", label="WLC", zorder=10000)
-        plt.plot([], [], ' ', label="Drift: " + str(p['drift']))  # quick and very dirty
-
-        plt.legend(loc=2, frameon=False)
-        plt.title(title)
-
-        if p['save'] == True:
-            new_path = table_path + table_file + "\\Figs\\"
-            if not os.path.exists(new_path):
-                os.makedirs(new_path)
-            plt.savefig(new_path + title)
-
-        # plt.show()
-        plt.close()
-
-    return
-
-def main_rot():
-    plt.close("all")
-
-    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180509"
-
-    measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
-
-    for measurement in measurements:
 
         f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
@@ -121,7 +83,7 @@ def main_rot():
         fig.suptitle(title)
 
         if p['save'] == True:
-            new_path = table_path + table_file + "\\Selected Figs\\"
+            new_path = table_path + table_file + "\\Selected figures\\"
             if not os.path.exists(new_path):
                 os.makedirs(new_path)
             fig.savefig(new_path + title)
@@ -134,9 +96,48 @@ def main_rot():
     return
 
 
+def main_no_rot():
+    plt.close("all")
+
+    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+    table_file = "180509"
+
+    measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
+
+    for measurement in measurements:
+        f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
+        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
+        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
+
+        plt.ylabel('F (pN)')
+        plt.xlabel('z (nm)')
+        plt.tick_params(direction='in', top=True, right=True)
+        plt.ylim(-1, 65)
+        plt.xlim(500, 2300)
+
+        plt.scatter(1000 * z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
+        plt.scatter(1000 * z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
+        plt.plot(wlc, f_wlc, '--', color="black", label="WLC", zorder=10000)
+        plt.plot([], [], ' ', label="Drift: " + str(p['drift']))  # quick and very dirty
+
+        plt.legend(loc=2, frameon=False)
+        plt.title(title)
+
+        if p['save'] == True:
+            new_path = table_path + table_file + "\\Figs\\"
+            if not os.path.exists(new_path):
+                os.makedirs(new_path)
+            plt.savefig(new_path + title)
+
+        # plt.show()
+        plt.close()
+
+    return
+
+
 def main_fitfiles():
 
-    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Fitfiles\\"
+    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
 
     fitfiles = []
     os.chdir(fitfile_path)
@@ -145,7 +146,7 @@ def main_fitfiles():
 
     for fitfile in fitfiles:
 
-        f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, f_trans = ba.read_fitfiles(fitfile_path, fitfile, p)
+        f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
 
@@ -153,7 +154,7 @@ def main_fitfiles():
         for t in range(len(np.transpose(transitions[0]))):
             # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
             # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
-            plt.plot(np.transpose(transitions[2])[t],f_trans,'--',color='lightgrey')  # transition 3
+            plt.plot(np.transpose(transitions[2])[t],f_pull,'--',color='lightgrey')  # transition 3
 
         plt.ylabel('F (pN)')
         plt.xlabel('z (nm)')
@@ -165,7 +166,7 @@ def main_fitfiles():
         plt.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
         plt.scatter(z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
         plt.plot(wlc/1000, f_wlc, '--', color="black", label="WLC", zorder=100)
-        plt.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
+        plt.plot(z_fit_pull, f_pull, color='black', linewidth=2, label="Stat. Mech. Model fit", zorder=1000)
 
         plt.legend(loc=2, frameon=False)
         plt.title(fitfile[:-4]+" - fitfile (mind offset!)")
@@ -173,7 +174,7 @@ def main_fitfiles():
         # TODO fix the offset in title
 
         if p['save'] == True:
-            new_path = fitfile_path + "\\Figs\\"
+            new_path = fitfile_path + "\\" + fitfile[:6] + "\\Fitfile figures\\"
             if not os.path.exists(new_path):
                 os.makedirs(new_path)
             plt.savefig(new_path + fitfile[:-4])
@@ -182,6 +183,7 @@ def main_fitfiles():
         plt.close()
 
     return
+
 
 def main_assemble_pars():
 
@@ -197,8 +199,9 @@ def main_assemble_pars():
 
     # TODO read pars from logfile
 
+
 if __name__ == "__main__":
-    # main()
-    main_rot()
-    # main_fitfiles()
+    main()
+    main_fitfiles()
     # main_assemble_pars()
+    # main_no_rot()

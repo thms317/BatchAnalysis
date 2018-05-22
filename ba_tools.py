@@ -227,8 +227,8 @@ def read_fitfiles(fitfile_path, fitfile, pars):
         print('Error: no parameters')
         return
 
-    mask = False
-    standard_trajectory = False
+    mask = True
+    standard_trajectory = True
 
     #  laptop or work PC
     bool = os.path.isdir(fitfile_path)
@@ -270,7 +270,7 @@ def read_fitfiles(fitfile_path, fitfile, pars):
         T2 = T2[mask == 1]
         T3 = T3[mask == 1]
 
-    transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
+
 
     # calculating the first derivative of force
     dx = np.diff(time)
@@ -286,6 +286,9 @@ def read_fitfiles(fitfile_path, fitfile, pars):
         z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
         z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
         z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        T1 = T1[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        T2 = T2[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        T3 = T3[np.where((diff_force > factor) & (time > 50) & (time < 80))]
 
     else:
         f_pull = force[np.where(diff_force > factor)]
@@ -293,8 +296,13 @@ def read_fitfiles(fitfile_path, fitfile, pars):
         z_pull = z[np.where(diff_force > factor)]
         z_release = z[np.where(diff_force < factor)]
         z_fit_pull = z_fit[np.where(diff_force > factor)]
+        T1 = T1[np.where(diff_force > factor)]
+        T2 = T2[np.where(diff_force > factor)]
+        T3 = T3[np.where(diff_force > factor)]
 
-    return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, force
+    transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
+
+    return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions
 
 
 def filter_rupture(fitfile, test=False):
