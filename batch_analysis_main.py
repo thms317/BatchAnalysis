@@ -89,8 +89,13 @@ def main_rot():
         ax1.set_xlim(-0.075, 0.075)
         ax1.set_ylim(-500, 500)
 
+        # twist on x-axis
+        # ax1.scatter(twist_pos, 1000*z_pos, color='darkgreen', label="Forward twisting", s=10, zorder=25, facecolors='none')
+        # ax1.scatter(twist_neg, 1000*z_neg, color='lightgrey', label='Backward twisting', s=10, zorder=15, facecolors='none')
+        # LND on x-axis
         ax1.scatter(lnd_pos, 1000*z_pos, color='darkgreen', label="Forward twisting", s=10, zorder=25, facecolors='none')
         ax1.scatter(lnd_neg, 1000*z_neg, color='lightgrey', label='Backward twisting', s=10, zorder=15, facecolors='none')
+
         ax1.plot([], [], ' ', label="Drift: " + str(drift_rot))  # quick and very dirty
 
         ax1.legend(loc=2, frameon=False)
@@ -116,7 +121,7 @@ def main_rot():
         fig.suptitle(title)
 
         if p['save'] == True:
-            new_path = table_path + table_file + "\\Figs_test\\"
+            new_path = table_path + table_file + "\\Selected Figs\\"
             if not os.path.exists(new_path):
                 os.makedirs(new_path)
             fig.savefig(new_path + title)
@@ -154,8 +159,8 @@ def main_fitfiles():
         plt.xlabel('z (nm)')
         plt.tick_params(direction='in', top=True, right=True)
 
-        plt.ylim(-1, 70)
-        plt.xlim(0, 3)
+        plt.ylim(-1, 60)
+        plt.xlim(0, 1.8)
 
         plt.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
         plt.scatter(z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')

@@ -152,7 +152,8 @@ def read_analyze_rot(measurement, pars):
         rotation = np.array(df['Stepper rot (turns)'])
     except:
         print("No rotation measurement")
-        return [], [], [], [], []
+        p['drift'] = 'uncorrected'
+        return [], [], [], [], [], []
 
     time = np.array(df['Time (s)'])
     Z = np.array(df['Z' + str(bead) + ' (um)'])

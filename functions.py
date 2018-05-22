@@ -177,6 +177,7 @@ def drift_self(Z, time):
     return drift_slope
 
 
+# calculate ruptures
 def rupture(time, amplitude, mask=False):
     # calculating the first derivative of amplitude
     dx = np.diff(time)
