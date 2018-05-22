@@ -14,27 +14,26 @@ def default_pars():
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = "168x16"  # Nucleosome Repeat Length
+    pars['NRL'] = "168x16"  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
-    pars['transitions'] = True
+    pars['global_drift'] = True
     return pars
 
-
 p = default_pars()
-
 
 def main():
     plt.close("all")
 
     table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180518"
+    table_file = "180509"
 
     measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
 
     for measurement in measurements:
         f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
-        wlc, _ = func.WLC(f_pull, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
+        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
+        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
 
         plt.ylabel('F (pN)')
         plt.xlabel('z (nm)')
@@ -44,7 +43,7 @@ def main():
 
         plt.scatter(1000 * z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
         plt.scatter(1000 * z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
-        plt.plot(wlc, f_pull, '--', color="black", label="WLC", zorder=10000)
+        plt.plot(wlc, f_wlc, '--', color="black", label="WLC", zorder=10000)
         plt.plot([], [], ' ', label="Drift: " + str(p['drift']))  # quick and very dirty
 
         plt.legend(loc=2, frameon=False)
@@ -59,15 +58,78 @@ def main():
         # plt.show()
         plt.close()
 
-    # TODO rotations
-    # TODO calculate drift (for entire sample, use median)
+    return
+
+def main_rot():
+    plt.close("all")
+
+    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+    table_file = "180509"
+
+    measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
+
+    for measurement in measurements:
+
+        f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
+        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
+        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
+        drift_FE = p['drift']
+
+        twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg = ba.read_analyze_rot(measurement, p)
+        drift_rot = p['drift']
+
+        fig = plt.figure(figsize=(15,5))
+
+        # rotation
+        ax1 = fig.add_subplot(1,2,1)
+
+        ax1.set_ylabel('z (nm)')
+        ax1.set_xlabel('$\sigma$')
+        ax1.tick_params(direction='in', top=True, right=True)
+        ax1.set_xlim(-0.075, 0.075)
+        ax1.set_ylim(-500, 500)
+
+        ax1.scatter(lnd_pos, 1000*z_pos, color='darkgreen', label="Forward twisting", s=10, zorder=25, facecolors='none')
+        ax1.scatter(lnd_neg, 1000*z_neg, color='lightgrey', label='Backward twisting', s=10, zorder=15, facecolors='none')
+        ax1.plot([], [], ' ', label="Drift: " + str(drift_rot))  # quick and very dirty
+
+        ax1.legend(loc=2, frameon=False)
+        ax1.set_title("Twist @ 1 pN")
+
+        # force-extension
+        ax2 = fig.add_subplot(1, 2, 2)
+
+        ax2.set_ylabel('F (pN)')
+        ax2.set_xlabel('z (nm)')
+        ax2.tick_params(direction='in', top=True, right=True)
+        ax2.set_ylim(-1, 65)
+        ax2.set_xlim(500, 2300)
+
+        ax2.plot([], [], ' ', label="Drift: " + str(drift_FE))  # quick and very dirty
+        ax2.scatter(1000 * z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
+        ax2.scatter(1000 * z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
+        ax2.plot(wlc, f_wlc, '--', color="black", label="WLC", zorder=10000)
+
+        ax2.legend(loc=2, frameon=False)
+        ax2.set_title("Force Extension")
+
+        fig.suptitle(title)
+
+        if p['save'] == True:
+            new_path = table_path + table_file + "\\Figs_test\\"
+            if not os.path.exists(new_path):
+                os.makedirs(new_path)
+            fig.savefig(new_path + title)
+
+        # fig.show()
+        plt.close()
+
+    # TODO fix why pycharm closes figures
 
     return
 
 
 def main_fitfiles():
-
-    plot_transitions = p['transitions']
 
     fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Fitfiles\\"
 
@@ -82,18 +144,18 @@ def main_fitfiles():
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
 
-        if plot_transitions:
-            for t in range(len(np.transpose(transitions[0]))):
-                # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
-                # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
-                plt.plot(np.transpose(transitions[2])[t],f_trans,'--',color='lightgrey')  # transition 3
+        # plot transitions
+        for t in range(len(np.transpose(transitions[0]))):
+            # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
+            # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
+            plt.plot(np.transpose(transitions[2])[t],f_trans,'--',color='lightgrey')  # transition 3
 
         plt.ylabel('F (pN)')
         plt.xlabel('z (nm)')
         plt.tick_params(direction='in', top=True, right=True)
 
-        plt.ylim(-1, 65)
-        plt.xlim(0.5, 1.8)
+        plt.ylim(-1, 70)
+        plt.xlim(0, 3)
 
         plt.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
         plt.scatter(z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
@@ -101,7 +163,9 @@ def main_fitfiles():
         plt.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
 
         plt.legend(loc=2, frameon=False)
-        plt.title(fitfile[:-4]+" - fitfile")
+        plt.title(fitfile[:-4]+" - fitfile (mind offset!)")
+
+        # TODO fix the offset in title
 
         if p['save'] == True:
             new_path = fitfile_path + "\\Figs\\"
@@ -112,7 +176,7 @@ def main_fitfiles():
         # plt.show()
         plt.close()
 
-        return
+    return
 
 def main_assemble_pars():
 
@@ -130,5 +194,6 @@ def main_assemble_pars():
 
 if __name__ == "__main__":
     # main()
-    main_fitfiles()
+    main_rot()
+    # main_fitfiles()
     # main_assemble_pars()
