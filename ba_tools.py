@@ -97,8 +97,8 @@ def read_analyze(measurement, pars):
     z_release = Z[diff_magnet > factor]
 
     # select high-force data
-    select_f = f_pull[np.where((f_pull > 30) & (f_pull < 50) & (time_pull > 60) & (time_pull < 140))]
-    select_z = z_pull[np.where((f_pull > 30) & (f_pull < 50) & (time_pull > 60) & (time_pull < 140))]
+    select_f = f_pull[np.where((f_pull > 40) & (f_pull < 50) & (time_pull > 60) & (time_pull < 140))]
+    select_z = z_pull[np.where((f_pull > 40) & (f_pull < 50) & (time_pull > 60) & (time_pull < 140))]
 
     # fit the WLC in fashion (x,y) - only fit offset, fix everything else
     popt, pcov = curve_fit(lambda f, z0: func.WLC_fit(f, P_nm, L_bp * 0.34, S_pN, z0), select_f, select_z, p0=1)

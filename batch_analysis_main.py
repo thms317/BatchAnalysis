@@ -10,28 +10,30 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 4753   # number of base pairs
+    pars['L_bp'] = 4535   # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = "168x16"  # Nucleosome Repeat Length + #repeats
+    pars['NRL'] = "167x15_tailless"  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
     pars['global_drift'] = True
     return pars
 
+
 p = default_pars()
+
 
 def main():
     plt.close("all")
 
     table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180509"
+    table_file = "180518"
 
     measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
 
     for measurement in measurements:
-
+        print("Processing measurement... " + str(measurement))
         f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
@@ -92,45 +94,6 @@ def main():
         plt.close()
 
     # TODO fix why pycharm closes figures
-
-    return
-
-
-def main_no_rot():
-    plt.close("all")
-
-    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180509"
-
-    measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
-
-    for measurement in measurements:
-        f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
-        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
-        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
-
-        plt.ylabel('F (pN)')
-        plt.xlabel('z (nm)')
-        plt.tick_params(direction='in', top=True, right=True)
-        plt.ylim(-1, 65)
-        plt.xlim(500, 2300)
-
-        plt.scatter(1000 * z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
-        plt.scatter(1000 * z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
-        plt.plot(wlc, f_wlc, '--', color="black", label="WLC", zorder=10000)
-        plt.plot([], [], ' ', label="Drift: " + str(p['drift']))  # quick and very dirty
-
-        plt.legend(loc=2, frameon=False)
-        plt.title(title)
-
-        if p['save'] == True:
-            new_path = table_path + table_file + "\\Figs\\"
-            if not os.path.exists(new_path):
-                os.makedirs(new_path)
-            plt.savefig(new_path + title)
-
-        # plt.show()
-        plt.close()
 
     return
 
@@ -198,6 +161,46 @@ def main_assemble_pars():
         print(logfile)
 
     # TODO read pars from logfile
+    # TODO assmeble steps
+
+
+def main_no_rot():
+    plt.close("all")
+
+    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+    table_file = "180509"
+
+    measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
+
+    for measurement in measurements:
+        f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
+        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
+        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
+
+        plt.ylabel('F (pN)')
+        plt.xlabel('z (nm)')
+        plt.tick_params(direction='in', top=True, right=True)
+        plt.ylim(-1, 65)
+        plt.xlim(500, 2300)
+
+        plt.scatter(1000 * z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
+        plt.scatter(1000 * z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
+        plt.plot(wlc, f_wlc, '--', color="black", label="WLC", zorder=10000)
+        plt.plot([], [], ' ', label="Drift: " + str(p['drift']))  # quick and very dirty
+
+        plt.legend(loc=2, frameon=False)
+        plt.title(title)
+
+        if p['save'] == True:
+            new_path = table_path + table_file + "\\Selected figures (no rot)\\"
+            if not os.path.exists(new_path):
+                os.makedirs(new_path)
+            plt.savefig(new_path + title)
+
+        # plt.show()
+        plt.close()
+
+    return
 
 
 if __name__ == "__main__":
