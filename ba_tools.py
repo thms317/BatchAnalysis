@@ -340,14 +340,21 @@ def filter_rupture(fitfile, test=False):
         return rupt, mask
 
 
-def build_measurements(file_location, p):
-    xl = pd.ExcelFile(file_location)
-    df = xl.parse("Sheet1")
+def build_measurements(file_location, pars):
+    try:
+        p = pars
+    except:
+        print('Error: no parameters')
+        return
+
+    # read DataFrame
+    df = pd.read_csv(file_location, sep="\t")
+
     selected = np.array(df['Selected'])
 
     data = np.array(df['File'])[np.where(selected == 1)]
     bead = np.array(df['Trace'])[np.where(selected == 1)]
-    date = np.full((len(bead)), file_location[-11:-5])
+    date = np.full((len(bead)), file_location[-10:-4])
     type = np.full((len(bead)), p['NRL'])
 
     measurements = []

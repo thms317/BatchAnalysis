@@ -30,7 +30,7 @@ def main():
     table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
     table_file = "180518"
 
-    measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
+    measurements = ba.build_measurements(table_path + table_file + ".txt", p)
 
     for measurement in measurements:
         print("Processing measurement... " + str(measurement))
@@ -330,8 +330,8 @@ def main_fitfiles_single():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     # main_fitfiles()
-    main_fitfiles_single()
+    # main_fitfiles_single()
     # main_assemble_pars()
     # main_no_rot()
