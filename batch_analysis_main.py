@@ -107,32 +107,78 @@ def main_fitfiles():
     for file in glob.glob("*.fit"):
         fitfiles.append(file)
 
+    ass_fit_pars = []
+    ass_fit_errors = []
+
     for fitfile in fitfiles:
+        print("Processing fitfile... " + str(fitfile))
+        title = fitfile[:6]
 
         f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
 
+        # read pars from logfile
+        logfile = fitfile[:-3] + "log"
+        fit_pars, fit_errors, table = ba.read_logfile(fitfile_path, logfile)
+        ass_fit_pars.append(fit_pars)
+        ass_fit_errors.append(fit_errors)
+
+        fig = plt.figure(figsize=(30, 10))
+        plt.rcParams.update({'font.size': 20})
+        plt.rc('axes', linewidth=3)
+
+        # number of nucleosomes
+        ax0 = fig.add_subplot(1, 2, 1)
+
+        ax0.set_ylabel('F (pN)')
+        ax0.set_xlabel('z (nm)')
+        ax0.tick_params(direction='in', top=True, right=True)
+
+        ax0.set_ylim(0, 6)
+        ax0.set_xlim(0.55, 1.25)
+
+        ax0.set_title("Zoom in")
+
+        ax0.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=30, zorder=25, facecolors='none')
+        ax0.scatter(z_release, f_release, color='lightgrey', s=30, zorder=15, label='Release', facecolors='none')
+        ax0.plot(wlc / 1000, f_wlc, '--', color="black", label="WLC", zorder=100)
+        ax0.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
+
+        ax0.legend(loc=2, frameon=False)
+
+        # number of tetrasomes
+        ax1 = fig.add_subplot(1, 2, 2)
+
+        ax1.set_ylabel('F (pN)')
+        ax1.set_xlabel('z (nm)')
+        ax1.tick_params(direction='in', top=True, right=True)
+
+        ax1.set_ylim(-1, 60)
+        ax1.set_xlim(0, 1.8)
+
+        ax1.set_title("Zoom out")
+
+        # print pars in figure
+        report = str(table[0]) + '\n' + str(table[1]) + '\n' + str(table[2]) + '\n' + str(table[3]) + '\n' + str(
+            table[4]) + '\n' + str(table[5])
+        ax1.annotate(report, xy=(0, 0.75), xytext=(12, -12), va='top', xycoords='axes fraction',
+                     textcoords='offset points')
+
         # plot transitions
         for t in range(len(np.transpose(transitions[0]))):
-            # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
-            # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
-            plt.plot(np.transpose(transitions[2])[t],f_pull,'--',color='lightgrey')  # transition 3
+            # ax1.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
+            # ax1.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
+            ax1.plot(np.transpose(transitions[2])[t], f_pull, '--', color='lightgrey')  # transition 3
 
-        plt.ylabel('F (pN)')
-        plt.xlabel('z (nm)')
-        plt.tick_params(direction='in', top=True, right=True)
+        ax1.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=30, zorder=25, facecolors='none')
+        ax1.scatter(z_release, f_release, color='lightgrey', s=30, zorder=15, label='Release', facecolors='none')
+        ax1.plot(wlc / 1000, f_wlc, '--', color="black", label="WLC", zorder=100)
+        ax1.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
 
-        plt.ylim(-1, 60)
-        plt.xlim(0, 1.8)
+        ax1.legend(loc=2, frameon=False)
 
-        plt.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
-        plt.scatter(z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
-        plt.plot(wlc/1000, f_wlc, '--', color="black", label="WLC", zorder=100)
-        plt.plot(z_fit_pull, f_pull, color='black', linewidth=2, label="Stat. Mech. Model fit", zorder=1000)
-
-        plt.legend(loc=2, frameon=False)
-        plt.title(fitfile[:-4]+" - fitfile (mind offset!)")
+        fig.suptitle(fitfile[:-4]+" - "+p['NRL'])
 
         # TODO fix the offset in title
 
@@ -145,22 +191,30 @@ def main_fitfiles():
         # plt.show()
         plt.close()
 
+    # assemble parameters into histogram
+    if p['save'] == True:
+        ba.plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = False)
+
     return
 
 
 def main_assemble_pars():
 
-    logfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Fitfiles\\"
+    logfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
 
     logfiles = []
     os.chdir(logfile_path)
-    for file in glob.glob("*.fit"):
+    for file in glob.glob("*.log"):
         logfiles.append(file)
 
     for logfile in logfiles:
-        print(logfile)
+        print("Processing logfile... " + str(logfile))
+        fit_pars, errors, table = ba.read_logfile(logfile_path, logfile)
 
-    # TODO read pars from logfile
+        # do do stuff with parameters
+
+    return
+
     # TODO assmeble steps
 
 
@@ -173,6 +227,8 @@ def main_no_rot():
     measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
 
     for measurement in measurements:
+        print("Processing measurement... " + str(measurement))
+
         f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
@@ -202,9 +258,80 @@ def main_no_rot():
 
     return
 
+def main_fitfiles_single():
+
+    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+
+    fitfiles = []
+    os.chdir(fitfile_path)
+    for file in glob.glob("*.fit"):
+        fitfiles.append(file)
+
+    ass_fit_pars = []
+    ass_fit_errors = []
+
+    for fitfile in fitfiles:
+        print("Processing fitfile... " + str(fitfile))
+        title = fitfile[:6]
+
+        f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
+        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
+        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
+
+        # read pars from logfile
+        logfile = fitfile[:-3] + "log"
+        fit_pars, fit_errors, table = ba.read_logfile(fitfile_path, logfile)
+        ass_fit_pars.append(fit_pars)
+        ass_fit_errors.append(fit_errors)
+
+        # print pars in figure
+        report = str(table[0]) + '\n' + str(table[1]) + '\n' + str(table[2]) + '\n' + str(table[3]) + '\n' + str(
+            table[4]) + '\n' + str(table[5])
+        plt.annotate(report, xy=(0, 0.75), xytext=(12, -12), va='top', xycoords='axes fraction',
+                     textcoords='offset points')
+
+        # plot transitions
+        for t in range(len(np.transpose(transitions[0]))):
+            # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
+            # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
+            plt.plot(np.transpose(transitions[2])[t],f_pull,'--',color='lightgrey')  # transition 3
+
+        plt.ylabel('F (pN)')
+        plt.xlabel('z (nm)')
+        plt.tick_params(direction='in', top=True, right=True)
+
+        plt.ylim(-1, 60)
+        plt.xlim(0, 1.8)
+
+        plt.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
+        plt.scatter(z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
+        plt.plot(wlc/1000, f_wlc, '--', color="black", label="WLC", zorder=100)
+        plt.plot(z_fit_pull, f_pull, color='black', linewidth=2, label="Stat. Mech. Model fit", zorder=1000)
+
+        plt.legend(loc=2, frameon=False)
+        plt.title(fitfile[:-4]+ " - "+p['NRL'])
+
+        # TODO fix the offset in title
+
+        if p['save'] == True:
+            new_path = fitfile_path + "\\" + fitfile[:6] + "\\Fitfile figures (single)\\"
+            if not os.path.exists(new_path):
+                os.makedirs(new_path)
+            plt.savefig(new_path + fitfile[:-4])
+
+        # plt.show()
+        plt.close()
+
+    # assemble parameters into histogram
+    if p['save'] == True:
+        ba.plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = False)
+
+    return
+
 
 if __name__ == "__main__":
-    main()
-    main_fitfiles()
+    # main()
+    # main_fitfiles()
+    main_fitfiles_single()
     # main_assemble_pars()
     # main_no_rot()

@@ -3,6 +3,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def read_analyze(measurement, pars):
@@ -220,6 +221,7 @@ def read_analyze_rot(measurement, pars):
 
     return twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg
 
+
 def read_fitfiles(fitfile_path, fitfile, pars):
     try:
         p = pars
@@ -269,8 +271,6 @@ def read_fitfiles(fitfile_path, fitfile, pars):
         T1 = T1[mask == 1]  # filter the transitions
         T2 = T2[mask == 1]
         T3 = T3[mask == 1]
-
-
 
     # calculating the first derivative of force
     dx = np.diff(time)
@@ -355,3 +355,119 @@ def build_measurements(file_location, p):
         measurements.append([date[n], data[n][5:8], bead[n], type[n]])
 
     return measurements
+
+
+def read_logfile(logfile_path, logfile):
+
+    f = open(logfile_path + logfile, 'r')
+    log = f.readlines()[:]
+    f.close()
+
+    for n, line in enumerate(log):
+        log[n] = line.rstrip()
+
+    i = log.index("[Fit parameters]")
+    j = log.index("[Fit local error]")
+
+    fit_pars = []
+    fit_pars.append(func.get_num(log[i + 7]))  # N_nuc
+    fit_pars.append(func.get_num(log[i + 10][14:]))  # N_unfolded
+    fit_pars.append(func.get_num(log[i + 9]))  # k
+    fit_pars.append(func.get_num(log[i + 13][4:]))  # G1
+    fit_pars.append(func.get_num(log[i + 14][4:]))  # G2
+    fit_pars.append(func.get_num(log[i + 16][16:]))  # degeneracy
+
+    errors = [[], [], []]
+    for error in range(j, len(log)):
+        if "k folded (pN/nm)" in log[error]:
+            errors[0] = (func.get_num(log[error]))  # place k-error in errors[0]
+        if "G1 (kT)" in log[error]:
+            strip_log = log[error][2:]
+            errors[1] = (func.get_num(strip_log))  # place G1-error in errors[1]
+        if "G2 (kT)" in log[error]:
+            strip_log = log[error][2:]
+            errors[2] = (func.get_num(strip_log))  # place G2-error in errors[2]
+
+    p0 = "N_nuc = " + str(fit_pars[0])
+    p1 = "N_unfolded = " + str(fit_pars[1])
+    p2 = "k (pN/nm) = " + str(fit_pars[2]) + " +/- " + str(errors[0])
+    p3 = "G1 (kT) = " + str(fit_pars[3]) + " +/- " + str(errors[1])
+    p4 = "G2 (kT) = " + str(fit_pars[4]) + " +/- " + str(errors[2])
+    p5 = "Degeneracy = " + str(fit_pars[5])
+
+    table = [p0, p1, p2, p3, p4, p5]
+
+    return fit_pars, errors, table
+
+
+def plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = True):
+
+    ass_fit_pars = np.transpose(np.array(ass_fit_pars))
+    ass_fit_errors = np.transpose(np.array(ass_fit_errors))
+
+    fig = plt.figure(figsize=(30, 18))
+    plt.rcParams.update({'font.size': 20})
+    plt.rc('axes', linewidth=3)
+
+    # number of nucleosomes
+    ax0 = fig.add_subplot(2, 3, 1)
+
+    ax0.set_ylabel('count')
+    ax0.set_xlabel('N_nuc')
+    ax0.tick_params(direction='in', top=True, right=True)
+    ax0.set_title("Number of Nucleosomes")
+    ax0.hist(ass_fit_pars[0])
+
+    # number of tetrasomes
+    ax1 = fig.add_subplot(2, 3, 2)
+
+    ax1.set_ylabel('count')
+    ax1.set_xlabel('N_unfolded')
+    ax1.tick_params(direction='in', top=True, right=True)
+    ax1.set_title("Number of Tetrasomes")
+    ax1.hist(ass_fit_pars[1])
+
+    # number of tetrasomes
+    ax2 = fig.add_subplot(2, 3, 3)
+
+    ax2.set_ylabel('count')
+    ax2.set_xlabel('k (pN/nm)')
+    ax2.tick_params(direction='in', top=True, right=True)
+    ax2.set_title("Fiber Stiffness")
+    ax2.hist(ass_fit_pars[2])
+
+    # number of tetrasomes
+    ax3 = fig.add_subplot(2, 3, 4)
+
+    ax3.set_ylabel('count')
+    ax3.set_xlabel('G1 (kT)')
+    ax3.tick_params(direction='in', top=True, right=True)
+    ax3.set_title("Stacking Energy G1")
+    ax3.hist(ass_fit_pars[3])
+
+    # number of tetrasomes
+    ax4 = fig.add_subplot(2, 3, 5)
+
+    ax4.set_ylabel('count')
+    ax4.set_xlabel('G2 (kT)')
+    ax4.tick_params(direction='in', top=True, right=True)
+    ax4.set_title("Interaction Energy G2")
+    ax4.hist(ass_fit_pars[4])
+
+    # number of tetrasomes
+    ax5 = fig.add_subplot(2, 3, 6)
+
+    ax5.set_ylabel('count')
+    ax5.set_xlabel('degeneracy (0..1)')
+    ax5.tick_params(direction='in', top=True, right=True)
+    ax5.set_title("Degeneracy")
+    ax5.hist(ass_fit_pars[5])
+
+    fig.suptitle(title)
+
+    if show_plot == True:
+        plt.show()
+
+    fig.savefig(new_path+title+"_pars")
+
+    return
