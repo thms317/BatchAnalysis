@@ -13,7 +13,7 @@ def read_analyze(measurement, pars):
         print('Error: no parameters')
         return
 
-    global_drift = p['global_drift']
+    global_drift = True
 
     # constants from parameters
     L_bp = p['L_bp']  # contour length (bp)
@@ -65,7 +65,7 @@ def read_analyze(measurement, pars):
             if rupt == False:
                 drift.append(func.drift_self(z_drift, time))
 
-        drift_med = np.median(drift)
+        drift_med = float(np.median(drift))
         Z = Z - (drift_med / 1000) * time
         p['drift'] = str(round(drift_med, 3)) + " nm/s (global drift)"
 
@@ -113,7 +113,7 @@ def read_analyze(measurement, pars):
 
     title = str(title) + '_' + str(measurement[1]) + '_' + str(measurement[2]) + '_' + str(measurement[3])
 
-    return f_pull, z_pull, f_release, z_release, title
+    return f_pull, z_pull, f_release, z_release, title, drift_med
 
 
 def read_analyze_rot(measurement, pars):
@@ -123,7 +123,7 @@ def read_analyze_rot(measurement, pars):
         print('Error: no parameters')
         return
 
-    global_drift = p['global_drift']
+    global_drift = True
 
     # constants from parameters
     L_bp = p['L_bp']  # contour length (bp)
@@ -340,7 +340,7 @@ def filter_rupture(fitfile, test=False):
         return rupt, mask
 
 
-def build_measurements(file_location, pars):
+def build_measurements(table_path, table_file, pars):
     try:
         p = pars
     except:
@@ -348,18 +348,19 @@ def build_measurements(file_location, pars):
         return
 
     # read DataFrame
-    df = pd.read_csv(file_location, sep="\t")
+    df = pd.read_csv(table_path + table_file, sep="\t")
 
     selected = np.array(df['Selected'])
 
     data = np.array(df['File'])[np.where(selected == 1)]
     bead = np.array(df['Trace'])[np.where(selected == 1)]
-    date = np.full((len(bead)), file_location[-10:-4])
+    date = np.full((len(bead)), table_file[:6])
     type = np.full((len(bead)), p['NRL'])
+    Z0 = np.array(df['Z0 (um)'])[np.where(selected == 1)]
 
     measurements = []
     for n in range(len(bead)):
-        measurements.append([date[n], data[n][5:8], bead[n], type[n]])
+        measurements.append([date[n], data[n][5:8], bead[n], type[n], Z0[n]])
 
     return measurements
 
@@ -374,7 +375,6 @@ def read_logfile(logfile_path, logfile):
         log[n] = line.rstrip()
 
     i = log.index("[Fit parameters]")
-    j = log.index("[Fit local error]")
 
     fit_pars = []
     fit_pars.append(func.get_num(log[i + 7]))  # N_nuc
@@ -385,22 +385,34 @@ def read_logfile(logfile_path, logfile):
     fit_pars.append(func.get_num(log[i + 16][16:]))  # degeneracy
 
     errors = [[], [], []]
-    for error in range(j, len(log)):
-        if "k folded (pN/nm)" in log[error]:
-            errors[0] = (func.get_num(log[error]))  # place k-error in errors[0]
-        if "G1 (kT)" in log[error]:
-            strip_log = log[error][2:]
-            errors[1] = (func.get_num(strip_log))  # place G1-error in errors[1]
-        if "G2 (kT)" in log[error]:
-            strip_log = log[error][2:]
-            errors[2] = (func.get_num(strip_log))  # place G2-error in errors[2]
+    try:
+        j = log.index("[Fit local error]")
 
-    p0 = "N_nuc = " + str(fit_pars[0])
-    p1 = "N_unfolded = " + str(fit_pars[1])
-    p2 = "k (pN/nm) = " + str(fit_pars[2]) + " +/- " + str(errors[0])
-    p3 = "G1 (kT) = " + str(fit_pars[3]) + " +/- " + str(errors[1])
-    p4 = "G2 (kT) = " + str(fit_pars[4]) + " +/- " + str(errors[2])
-    p5 = "Degeneracy = " + str(fit_pars[5])
+        for error in range(j, len(log)):
+            if "k folded (pN/nm)" in log[error]:
+                errors[0] = (func.get_num(log[error]))  # place k-error in errors[0]
+            if "G1 (kT)" in log[error]:
+                strip_log = log[error][2:]
+                errors[1] = (func.get_num(strip_log))  # place G1-error in errors[1]
+            if "G2 (kT)" in log[error]:
+                strip_log = log[error][2:]
+                errors[2] = (func.get_num(strip_log))  # place G2-error in errors[2]
+
+        p0 = "N_nuc = " + str(fit_pars[0])
+        p1 = "N_unfolded = " + str(fit_pars[1])
+        p2 = "k (pN/nm) = " + str(fit_pars[2]) + " +/- " + str(errors[0])
+        p3 = "G1 (kT) = " + str(fit_pars[3]) + " +/- " + str(errors[1])
+        p4 = "G2 (kT) = " + str(fit_pars[4]) + " +/- " + str(errors[2])
+        p5 = "Degeneracy = " + str(fit_pars[5])
+
+    except:
+
+        p0 = "N_nuc = " + str(fit_pars[0])
+        p1 = "N_unfolded = " + str(fit_pars[1])
+        p2 = "k (pN/nm) = " + str(fit_pars[2])
+        p3 = "G1 (kT) = " + str(fit_pars[3])
+        p4 = "G2 (kT) = " + str(fit_pars[4])
+        p5 = "Degeneracy = " + str(fit_pars[5])
 
     table = [p0, p1, p2, p3, p4, p5]
 
@@ -410,7 +422,7 @@ def read_logfile(logfile_path, logfile):
 def plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = True):
 
     ass_fit_pars = np.transpose(np.array(ass_fit_pars))
-    ass_fit_errors = np.transpose(np.array(ass_fit_errors))
+    # ass_fit_errors = np.transpose(np.array(ass_fit_errors))
 
     fig = plt.figure(figsize=(30, 18))
     plt.rcParams.update({'font.size': 20})

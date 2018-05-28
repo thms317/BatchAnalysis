@@ -4,20 +4,20 @@ import functions as func
 import ba_tools as ba
 import glob
 import numpy as np
+import csv
 
 
 def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 4535   # number of base pairs
+    pars['L_bp'] = 4535  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = "167x15_tailless"  # Nucleosome Repeat Length + #repeats
+    pars['NRL'] = "167x15_WT"  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
-    pars['global_drift'] = True
     return pars
 
 
@@ -28,24 +28,25 @@ def main():
     plt.close("all")
 
     table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180518"
+    table_file = "180518_WT"
 
-    measurements = ba.build_measurements(table_path + table_file + ".txt", p)
-
+    measurements = ba.build_measurements(table_path, table_file + ".txt", p)
+    drift_arr = []
     for measurement in measurements:
         print("Processing measurement... " + str(measurement))
-        f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
+        f_pull, z_pull, f_release, z_release, title, drift = ba.read_analyze(measurement, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
         drift_FE = p['drift']
+        drift_arr.append(drift)
 
         twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg = ba.read_analyze_rot(measurement, p)
         drift_rot = p['drift']
 
-        fig = plt.figure(figsize=(15,5))
+        fig = plt.figure(figsize=(15, 5))
 
         # rotation
-        ax1 = fig.add_subplot(1,2,1)
+        ax1 = fig.add_subplot(1, 2, 1)
 
         ax1.set_ylabel('z (nm)')
         ax1.set_xlabel('$\sigma$')
@@ -57,8 +58,10 @@ def main():
         # ax1.scatter(twist_pos, 1000*z_pos, color='darkgreen', label="Forward twisting", s=10, zorder=25, facecolors='none')
         # ax1.scatter(twist_neg, 1000*z_neg, color='lightgrey', label='Backward twisting', s=10, zorder=15, facecolors='none')
         # LND on x-axis
-        ax1.scatter(lnd_pos, 1000*z_pos, color='darkgreen', label="Forward twisting", s=10, zorder=25, facecolors='none')
-        ax1.scatter(lnd_neg, 1000*z_neg, color='lightgrey', label='Backward twisting', s=10, zorder=15, facecolors='none')
+        ax1.scatter(lnd_pos, 1000 * z_pos, color='darkgreen', label="Forward twisting", s=10, zorder=25,
+                    facecolors='none')
+        ax1.scatter(lnd_neg, 1000 * z_neg, color='lightgrey', label='Backward twisting', s=10, zorder=15,
+                    facecolors='none')
 
         ax1.plot([], [], ' ', label="Drift: " + str(drift_rot))  # quick and very dirty
 
@@ -85,7 +88,7 @@ def main():
         fig.suptitle(title)
 
         if p['save'] == True:
-            new_path = table_path + table_file + "\\Selected figures\\"
+            new_path = table_path + table_file[:6] + "\\Selected figures" + table_file[6:] + "\\"
             if not os.path.exists(new_path):
                 os.makedirs(new_path)
             fig.savefig(new_path + title)
@@ -93,13 +96,21 @@ def main():
         # fig.show()
         plt.close()
 
+    if p['save'] == True:
+        measurements = np.transpose(np.append(np.transpose(measurements), drift_arr).reshape((6, -1)))
+        headers = ["date", "data_", "bead", "type", "z-offset", "drift"]
+        measurements = np.append(headers,measurements).reshape((-1, 6))
+        with open(new_path + table_file[:6] + "_list_of_measurements.txt", "w+") as my_csv:
+            csvWriter = csv.writer(my_csv, delimiter='\t')
+            csvWriter.writerows(measurements)
+
     # TODO fix why pycharm closes figures
+    # TODO fix headers
 
     return
 
 
 def main_fitfiles():
-
     fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
 
     fitfiles = []
@@ -178,7 +189,7 @@ def main_fitfiles():
 
         ax1.legend(loc=2, frameon=False)
 
-        fig.suptitle(fitfile[:-4]+" - "+p['NRL'])
+        fig.suptitle(fitfile[:-4] + " - " + p['NRL'])
 
         # TODO fix the offset in title
 
@@ -193,13 +204,12 @@ def main_fitfiles():
 
     # assemble parameters into histogram
     if p['save'] == True:
-        ba.plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = False)
+        ba.plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot=False)
 
     return
 
 
 def main_assemble_pars():
-
     logfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
 
     logfiles = []
@@ -258,8 +268,8 @@ def main_no_rot():
 
     return
 
-def main_fitfiles_single():
 
+def main_fitfiles_single():
     fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
 
     fitfiles = []
@@ -294,7 +304,7 @@ def main_fitfiles_single():
         for t in range(len(np.transpose(transitions[0]))):
             # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
             # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
-            plt.plot(np.transpose(transitions[2])[t],f_pull,'--',color='lightgrey')  # transition 3
+            plt.plot(np.transpose(transitions[2])[t], f_pull, '--', color='lightgrey')  # transition 3
 
         plt.ylabel('F (pN)')
         plt.xlabel('z (nm)')
@@ -305,11 +315,11 @@ def main_fitfiles_single():
 
         plt.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
         plt.scatter(z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
-        plt.plot(wlc/1000, f_wlc, '--', color="black", label="WLC", zorder=100)
+        plt.plot(wlc / 1000, f_wlc, '--', color="black", label="WLC", zorder=100)
         plt.plot(z_fit_pull, f_pull, color='black', linewidth=2, label="Stat. Mech. Model fit", zorder=1000)
 
         plt.legend(loc=2, frameon=False)
-        plt.title(fitfile[:-4]+ " - "+p['NRL'])
+        plt.title(fitfile[:-4] + " - " + p['NRL'])
 
         # TODO fix the offset in title
 
@@ -324,7 +334,7 @@ def main_fitfiles_single():
 
     # assemble parameters into histogram
     if p['save'] == True:
-        ba.plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = False)
+        ba.plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot=False)
 
     return
 
