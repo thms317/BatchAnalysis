@@ -1,20 +1,32 @@
-# from Definitions import WLC
-from definitions import *
+import pandas as pd
 import numpy as np
+import functions as func
 import matplotlib.pyplot as plt
 
-L = 3646  # contour length (bp)
-p = 50  # persistence length (nm)
-S = 1000  # stretch modulus (pN)
-x0 = 0  # offset (nm)
+good = "C:\\Users\\brouw\\Desktop\\13_good_21_bad\\data_013.dat"
+bad = "C:\\Users\\brouw\\Desktop\\13_good_21_bad\\data_021.dat"
 
-force = []
-extension = []
+# read DataFrame
+# df = pd.read_csv(good, sep="\t")
+df = pd.read_csv(bad, sep="\t")
 
-for f in range(1, 500):
-    f /= 10
-    force.append(f)
-    extension.append(WLC(f, p, L, S, x0))
+time = df['Time (s)']
+magnet = df['Stepper shift (mm)']
 
-plt.plot(extension, force)
+# for n in range(len(df.columns)):
+#     column = np.array(df.ix[:,n])
+#     bool = np.isnan(column)
+#     if True in bool:
+#         print("Something is amiss")
+
+force = func.calc_force(magnet)
+
+# print(np.isnan(force).any())
+
+# calculating the first derivative of magnet
+dx = np.diff(time)
+dy = np.diff(magnet)
+# diff_magnet = np.append([0], np.divide(dy, dx))  # add a zero as first element
+
+plt.scatter(np.arange(0,len(dx)),dx)
 plt.show()

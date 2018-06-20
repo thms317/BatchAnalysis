@@ -6,12 +6,11 @@ import glob
 import numpy as np
 import csv
 
-
 def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 4735  # number of base pairs
+    pars['L_bp'] = 4753  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
@@ -25,11 +24,11 @@ def default_pars():
 
 p = default_pars()
 
-def main():
+def main_measurement_files():
     plt.close("all")
 
-    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180612_168"
+    table_path = "C:\\Users\\brouw\\Desktop\\Data\\Cumulative\\168x16\\"
+    table_file = "180615_168"
 
     measurements = ba.build_measurements(table_path, table_file + ".txt", p)
     drift_arr = []
@@ -119,7 +118,7 @@ def main():
 
 
 def main_fitfiles():
-    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Cumulative\\168x16\\Fitfiles (fit 05-30 pN) - stiffness\\"
 
     fitfiles = []
     os.chdir(fitfile_path)
@@ -214,141 +213,7 @@ def main_fitfiles():
     return
 
 
-
-
-def main_assemble_pars():
-    logfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-
-    logfiles = []
-    os.chdir(logfile_path)
-    for file in glob.glob("*.log"):
-        logfiles.append(file)
-
-    for logfile in logfiles:
-        print("Processing logfile... " + str(logfile))
-        fit_pars, errors, table = ba.read_logfile(logfile_path, logfile)
-
-        # do do stuff with parameters
-
-    return
-
-    # TODO assmeble steps
-
-
-def main_no_rot():
-    plt.close("all")
-
-    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180509"
-
-    measurements = ba.build_measurements(table_path + table_file + ".xlsx", p)
-
-    for measurement in measurements:
-        print("Processing measurement... " + str(measurement))
-
-        f_pull, z_pull, f_release, z_release, title = ba.read_analyze(measurement, p)
-        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
-        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
-
-        plt.ylabel('F (pN)')
-        plt.xlabel('z (nm)')
-        plt.tick_params(direction='in', top=True, right=True)
-        plt.ylim(-1, 65)
-        plt.xlim(500, 2300)
-
-        plt.scatter(1000 * z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
-        plt.scatter(1000 * z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
-        plt.plot(wlc, f_wlc, '--', color="black", label="WLC", zorder=10000)
-        plt.plot([], [], ' ', label="Drift: " + str(p['drift']))  # quick and very dirty
-
-        plt.legend(loc=2, frameon=False)
-        plt.title(title)
-
-        if p['save'] == True:
-            new_path = table_path + table_file + "\\Selected figures (no rot)\\"
-            if not os.path.exists(new_path):
-                os.makedirs(new_path)
-            plt.savefig(new_path + title)
-
-        # plt.show()
-        plt.close()
-
-    return
-
-
-def main_fitfiles_single():
-    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-
-    fitfiles = []
-    os.chdir(fitfile_path)
-    for file in glob.glob("*.fit"):
-        fitfiles.append(file)
-
-    ass_fit_pars = []
-    ass_fit_errors = []
-
-    for fitfile in fitfiles:
-        print("Processing fitfile... " + str(fitfile))
-        title = fitfile[:6]
-
-        f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
-        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
-        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
-
-        # read pars from logfile
-        logfile = fitfile[:-3] + "log"
-        fit_pars, fit_errors, table = ba.read_logfile(fitfile_path, logfile)
-        ass_fit_pars.append(fit_pars)
-        ass_fit_errors.append(fit_errors)
-
-        # print pars in figure
-        report = str(table[0]) + '\n' + str(table[1]) + '\n' + str(table[2]) + '\n' + str(table[3]) + '\n' + str(
-            table[4]) + '\n' + str(table[5])
-        plt.annotate(report, xy=(0, 0.75), xytext=(12, -12), va='top', xycoords='axes fraction',
-                     textcoords='offset points')
-
-        # plot transitions
-        for t in range(len(np.transpose(transitions[0]))):
-            # plt.plot(np.transpose(transitions[0])[t],f_trans,'--',color='lightgrey')  # transition 1
-            # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
-            plt.plot(np.transpose(transitions[2])[t], f_pull, '--', color='lightgrey')  # transition 3
-
-        plt.ylabel('F (pN)')
-        plt.xlabel('z (nm)')
-        plt.tick_params(direction='in', top=True, right=True)
-
-        plt.ylim(-1, 60)
-        plt.xlim(0, 1.8)
-
-        plt.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=10, zorder=25, facecolors='none')
-        plt.scatter(z_release, f_release, color='lightgrey', s=10, zorder=15, label='Release', facecolors='none')
-        plt.plot(wlc / 1000, f_wlc, '--', color="black", label="WLC", zorder=100)
-        plt.plot(z_fit_pull, f_pull, color='black', linewidth=2, label="Stat. Mech. Model fit", zorder=1000)
-
-        plt.legend(loc=2, frameon=False)
-        plt.title(fitfile[:-4] + " - " + p['NRL_str'])
-
-        # TODO fix the offset in title
-
-        if p['save'] == True:
-            new_path = fitfile_path + "\\" + fitfile[:6] + "\\Fitfile figures (single)\\"
-            if not os.path.exists(new_path):
-                os.makedirs(new_path)
-            plt.savefig(new_path + fitfile[:-4])
-
-        # plt.show()
-        plt.close()
-
-    # assemble parameters into histogram
-    if p['save'] == True:
-        ba.plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot=False)
-
-    return
-
-
 if __name__ == "__main__":
-    main()
-    # main_fitfiles()
-    # main_fitfiles_single()
-    # main_assemble_pars()
-    # main_no_rot()
+    # main_measurement_files()
+    main_fitfiles()
+

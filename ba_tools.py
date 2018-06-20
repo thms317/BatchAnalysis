@@ -113,7 +113,7 @@ def read_analyze(measurement, pars):
 
     title = str(title) + '_' + str(measurement[1]) + '_' + str(measurement[2]) + '_' + str(measurement[3])
 
-    return f_pull, z_pull, f_release, z_release, title, drift_med
+    return f_pull, z_pull, f_release, z_release, title, drift_med, z_fit
 
 
 def read_analyze_rot(measurement, pars):
@@ -285,6 +285,8 @@ def read_fitfiles(fitfile_path, fitfile, pars):
         f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
         z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
         z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        time_pull = time[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        time_release = time[np.where((diff_force < factor) & (time > 75) & (time < 125))]
         z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
         T1 = T1[np.where((diff_force > factor) & (time > 50) & (time < 80))]
         T2 = T2[np.where((diff_force > factor) & (time > 50) & (time < 80))]
@@ -303,6 +305,7 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
 
     return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions
+    # return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, time_pull, time_release, force, z, time
 
 
 def filter_rupture(fitfile, test=False):
@@ -355,12 +358,11 @@ def build_measurements(table_path, table_file, pars):
     data = np.array(df['File'])[np.where(selected == 1)]
     bead = np.array(df['Trace'])[np.where(selected == 1)]
     date = np.full((len(bead)), table_file[:6])
-    type = np.full((len(bead)), p['NRL'])
-    Z0 = np.array(df['Z0 (um)'])[np.where(selected == 1)]
+    type = np.full((len(bead)), p['NRL_str'])
 
     measurements = []
     for n in range(len(bead)):
-        measurements.append([date[n], data[n][5:8], bead[n], type[n], Z0[n]])
+        measurements.append([date[n], data[n][5:8], bead[n], type[n]])
 
     return measurements
 
@@ -379,8 +381,8 @@ def read_logfile(logfile_path, logfile):
     fit_pars = []
     fit_pars.append(func.get_num(log[i + 7]))  # N_nuc
     fit_pars.append(func.get_num(log[i + 10][14:]))  # N_unfolded
-    fit_pars.append(func.get_num(log[i + 9]))  # k
-    fit_pars.append(func.get_num(log[i + 13][4:]))  # G1
+    fit_pars.append(round(func.get_num(log[i + 9]),3))  # k
+    fit_pars.append(round(func.get_num(log[i + 13][4:]),3))  # G1
     fit_pars.append(func.get_num(log[i + 14][4:]))  # G2
     fit_pars.append(func.get_num(log[i + 16][16:]))  # degeneracy
 
@@ -390,13 +392,13 @@ def read_logfile(logfile_path, logfile):
 
         for error in range(j, len(log)):
             if "k folded (pN/nm)" in log[error]:
-                errors[0] = (func.get_num(log[error]))  # place k-error in errors[0]
+                errors[0] = round(func.get_num(log[error]),3)  # place k-error in errors[0]
             if "G1 (kT)" in log[error]:
                 strip_log = log[error][2:]
-                errors[1] = (func.get_num(strip_log))  # place G1-error in errors[1]
+                errors[1] = round(func.get_num(strip_log),3)  # place G1-error in errors[1]
             if "G2 (kT)" in log[error]:
                 strip_log = log[error][2:]
-                errors[2] = (func.get_num(strip_log))  # place G2-error in errors[2]
+                errors[2] = round(func.get_num(strip_log),3)  # place G2-error in errors[2]
 
         p0 = "N_nuc = " + str(fit_pars[0])
         p1 = "N_unfolded = " + str(fit_pars[1])
@@ -419,7 +421,7 @@ def read_logfile(logfile_path, logfile):
     return fit_pars, errors, table
 
 
-def plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = True):
+def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
 
     ass_fit_pars = np.transpose(np.array(ass_fit_pars))
     # ass_fit_errors = np.transpose(np.array(ass_fit_errors))
@@ -428,26 +430,47 @@ def plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = True
     plt.rcParams.update({'font.size': 20})
     plt.rc('axes', linewidth=3)
 
-    # number of nucleosomes
-    ax0 = fig.add_subplot(2, 3, 1)
+    # # number of nucleosomes
+    # ax0 = fig.add_subplot(2, 2, 1)
+    #
+    # ax0.set_ylabel('count')
+    # ax0.set_xlabel('N_nuc')
+    # ax0.tick_params(direction='in', top=True, right=True)
+    # ax0.set_title("Number of Nucleosomes")
+    # ax0.hist(ass_fit_pars[0])
+    #
+    # # number of tetrasomes
+    # ax1 = fig.add_subplot(2, 2, 2)
+    #
+    # ax1.set_ylabel('count')
+    # ax1.set_xlabel('N_unfolded')
+    # ax1.tick_params(direction='in', top=True, right=True)
+    # ax1.set_title("Number of Tetrasomes")
+    # ax1.hist(ass_fit_pars[1])
 
-    ax0.set_ylabel('count')
-    ax0.set_xlabel('N_nuc')
-    ax0.tick_params(direction='in', top=True, right=True)
-    ax0.set_title("Number of Nucleosomes")
-    ax0.hist(ass_fit_pars[0])
+    # # number of nucleosomes
+    # ax0 = fig.add_subplot(2, 2, 1)
+    #
+    # ax0.set_ylabel('count')
+    # ax0.set_xlabel('N_nuc')
+    # ax0.tick_params(direction='in', top=True, right=True)
+    # ax0.set_title("Number of Nucleosomes")
+    # ax0.hist(ass_fit_pars[0])
 
-    # number of tetrasomes
-    ax1 = fig.add_subplot(2, 3, 2)
+    # number of stacked nucleosomes in fiber
+    ax1 = fig.add_subplot(2, 1, 1)
 
     ax1.set_ylabel('count')
-    ax1.set_xlabel('N_unfolded')
+    ax1.set_xlabel('Stacked Nucleosomes in Fiber')
     ax1.tick_params(direction='in', top=True, right=True)
-    ax1.set_title("Number of Tetrasomes")
-    ax1.hist(ass_fit_pars[1])
+    ax1.set_title("Stacked Nucleosomes")
+    stacked=[]
+    for n,x in enumerate(ass_fit_pars[0]):
+        stacked.append(ass_fit_pars[0][n]-ass_fit_pars[1][n])
+    ax1.hist(stacked)
 
-    # number of tetrasomes
-    ax2 = fig.add_subplot(2, 3, 3)
+    # stiffness
+    ax2 = fig.add_subplot(2, 2, 3)
 
     ax2.set_ylabel('count')
     ax2.set_xlabel('k (pN/nm)')
@@ -455,8 +478,8 @@ def plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = True
     ax2.set_title("Fiber Stiffness")
     ax2.hist(ass_fit_pars[2])
 
-    # number of tetrasomes
-    ax3 = fig.add_subplot(2, 3, 4)
+    # Stacking Energy G1
+    ax3 = fig.add_subplot(2, 2, 4)
 
     ax3.set_ylabel('count')
     ax3.set_xlabel('G1 (kT)')
@@ -464,29 +487,29 @@ def plot_hist(ass_fit_pars, ass_fit_errors, title, new_path, p, show_plot = True
     ax3.set_title("Stacking Energy G1")
     ax3.hist(ass_fit_pars[3])
 
-    # number of tetrasomes
-    ax4 = fig.add_subplot(2, 3, 5)
+    # # G2
+    # ax4 = fig.add_subplot(2, 3, 5)
+    #
+    # ax4.set_ylabel('count')
+    # ax4.set_xlabel('G2 (kT)')
+    # ax4.tick_params(direction='in', top=True, right=True)
+    # ax4.set_title("Interaction Energy G2")
+    # ax4.hist(ass_fit_pars[4])
+    #
+    # # Degeneracy
+    # ax5 = fig.add_subplot(2, 3, 6)
+    #
+    # ax5.set_ylabel('count')
+    # ax5.set_xlabel('degeneracy (0..1)')
+    # ax5.tick_params(direction='in', top=True, right=True)
+    # ax5.set_title("Degeneracy")
+    # ax5.hist(ass_fit_pars[5])
 
-    ax4.set_ylabel('count')
-    ax4.set_xlabel('G2 (kT)')
-    ax4.tick_params(direction='in', top=True, right=True)
-    ax4.set_title("Interaction Energy G2")
-    ax4.hist(ass_fit_pars[4])
-
-    # number of tetrasomes
-    ax5 = fig.add_subplot(2, 3, 6)
-
-    ax5.set_ylabel('count')
-    ax5.set_xlabel('degeneracy (0..1)')
-    ax5.tick_params(direction='in', top=True, right=True)
-    ax5.set_title("Degeneracy")
-    ax5.hist(ass_fit_pars[5])
-
-    fig.suptitle(title)
+    fig.suptitle(p['NRL_str'] + " (n = " + str(len(ass_fit_pars[0])) + ")")
 
     if show_plot == True:
         plt.show()
 
-    fig.savefig(new_path+title+"_pars")
+    fig.savefig(new_path+p['NRL_str']+"_pars")
 
     return
