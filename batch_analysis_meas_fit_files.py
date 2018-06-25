@@ -10,11 +10,11 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 4753  # number of base pairs
+    pars['L_bp'] = 4801  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = 168  # nucleosome repeat length
+    pars['NRL'] = 171  # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
     pars['type'] = "Human"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
@@ -27,8 +27,8 @@ p = default_pars()
 def main_measurement_files():
     plt.close("all")
 
-    table_path = "C:\\Users\\brouw\\Desktop\\Data\\Cumulative\\168x16\\"
-    table_file = "180615_168"
+    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+    table_file = "180622_171"
 
     measurements = ba.build_measurements(table_path, table_file + ".txt", p)
     drift_arr = []
@@ -112,13 +112,11 @@ def main_measurement_files():
             csvWriter = csv.writer(my_csv, delimiter='\t')
             csvWriter.writerows(measurements)
 
-    # TODO fix why pycharm closes figures
-
     return
 
 
 def main_fitfiles():
-    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Cumulative\\168x16\\Fitfiles (fit 05-30 pN) - stiffness\\"
+    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
 
     fitfiles = []
     os.chdir(fitfile_path)
@@ -132,7 +130,8 @@ def main_fitfiles():
         print("Processing fitfile... " + str(fitfile))
 
         f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
-        f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
+        f_wlc = np.logspace(np.log10(0.15), np.log10(int(55.2896842957)), 1000)
+        # f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)  # this one is better, although some measurements crash
         wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
 
         # read pars from logfile
