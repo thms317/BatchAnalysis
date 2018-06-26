@@ -132,7 +132,7 @@ def main_fitfiles():
         f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
         f_wlc = np.logspace(np.log10(0.15), np.log10(int(55.2896842957)), 1000)
         # f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)  # this one is better, although some measurements crash
-        wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
+        wlc = transitions[2][-1]
 
         # read pars from logfile
         logfile = fitfile[:-3] + "log"
@@ -158,7 +158,7 @@ def main_fitfiles():
 
         ax0.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=30, zorder=25, facecolors='none')
         ax0.scatter(z_release, f_release, color='lightgrey', s=30, zorder=15, label='Release', facecolors='none')
-        ax0.plot(wlc / 1000, f_wlc, '--', color="black", label="WLC", zorder=100)
+        ax0.plot(wlc, f_pull, '--', color="black", label="WLC", zorder=100)
         ax0.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
 
         ax0.legend(loc=2, frameon=False)
