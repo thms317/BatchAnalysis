@@ -385,6 +385,9 @@ def read_logfile(logfile_path, logfile):
     fit_pars.append(round(func.get_num(log[i + 13][4:]),3))  # G1
     fit_pars.append(func.get_num(log[i + 14][4:]))  # G2
     fit_pars.append(func.get_num(log[i + 16][16:]))  # degeneracy
+    fit_pars.append(func.get_num(log[i + 7]) - func.get_num(log[i + 10][14:])) # stacked nucleosomes
+    fit_pars.append(func.get_num(log[i + 4])) # Stretch Modulus
+
 
     errors = [[], [], []]
     try:
@@ -406,6 +409,11 @@ def read_logfile(logfile_path, logfile):
         p3 = "G1 (kT) = " + str(fit_pars[3]) + " +/- " + str(errors[1])
         p4 = "G2 (kT) = " + str(fit_pars[4]) + " +/- " + str(errors[2])
         p5 = "Degeneracy = " + str(fit_pars[5])
+        p6 = "Stacked Nucleosomes = " + str(fit_pars[6])
+        if int(fit_pars[7]) != 1000:
+            p7 = "Stretch Modulus = " + str(fit_pars[7])
+        else:
+            p7 = []
 
     except:
 
@@ -415,8 +423,13 @@ def read_logfile(logfile_path, logfile):
         p3 = "G1 (kT) = " + str(fit_pars[3])
         p4 = "G2 (kT) = " + str(fit_pars[4])
         p5 = "Degeneracy = " + str(fit_pars[5])
+        p6 = "Stacked Nucleosomes = " + str(fit_pars[6])
+        if int(fit_pars[7]) != 1000:
+            p7 = "Stretch Modulus = " + str(fit_pars[7])
+        else:
+            p7 = []
 
-    table = [p0, p1, p2, p3, p4, p5]
+    table = [p0, p1, p2, p3, p4, p5, p6, p7]
 
     return fit_pars, errors, table
 

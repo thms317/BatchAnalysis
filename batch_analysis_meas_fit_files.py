@@ -130,9 +130,7 @@ def main_fitfiles():
         print("Processing fitfile... " + str(fitfile))
 
         f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
-        f_wlc = np.logspace(np.log10(0.15), np.log10(int(55.2896842957)), 1000)
-        # f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)  # this one is better, although some measurements crash
-        wlc = transitions[2][-1]
+        wlc = np.transpose(transitions[2])[-1]
 
         # read pars from logfile
         logfile = fitfile[:-3] + "log"
@@ -151,14 +149,13 @@ def main_fitfiles():
         ax0.set_xlabel('z (nm)')
         ax0.tick_params(direction='in', top=True, right=True)
 
-        ax0.set_ylim(0, 6)
-        ax0.set_xlim(0.25, 1.25)
+        ax0.set_ylim(0, 12)
+        ax0.set_xlim(0.40, 1.40)
 
         ax0.set_title("Zoom in")
 
         ax0.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=30, zorder=25, facecolors='none')
         ax0.scatter(z_release, f_release, color='lightgrey', s=30, zorder=15, label='Release', facecolors='none')
-        ax0.plot(wlc, f_pull, '--', color="black", label="WLC", zorder=100)
         ax0.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
 
         ax0.legend(loc=2, frameon=False)
@@ -176,8 +173,8 @@ def main_fitfiles():
         ax1.set_title("Zoom out")
 
         # print pars in figure
-        report = str(table[0]) + '\n' + str(table[1]) + '\n' + str(table[2]) + '\n' + str(table[3]) + '\n' + str(
-            table[4]) + '\n' + str(table[5])
+        report = str(table[0]) + '\n' + str(table[1]) + '\n' + str(table[6]) + '\n' + str(table[2]) + '\n' + str(table[3]) + '\n' + str(
+            table[4]) + '\n' + str(table[5]) + '\n' + str(table[2])
         ax1.annotate(report, xy=(0, 0.75), xytext=(12, -12), va='top', xycoords='axes fraction',
                      textcoords='offset points')
 
@@ -189,7 +186,7 @@ def main_fitfiles():
 
         ax1.scatter(z_pull, f_pull, color='darkgreen', label="Pull", s=30, zorder=25, facecolors='none')
         ax1.scatter(z_release, f_release, color='lightgrey', s=30, zorder=15, label='Release', facecolors='none')
-        ax1.plot(wlc / 1000, f_wlc, '--', color="black", label="WLC", zorder=100)
+        ax1.plot(wlc, f_pull, '--', color="black", label="WLC", zorder=100)
         ax1.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
 
         ax1.legend(loc=2, frameon=False)
