@@ -10,11 +10,11 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 4769  # number of base pairs
+    pars['L_bp'] = 4753  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = 169  # nucleosome repeat length
+    pars['NRL'] = 168     # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
     pars['type'] = "Human"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
@@ -116,7 +116,7 @@ def main_measurement_files():
 
 
 def main_fitfiles():
-    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\180621\\Fitfiles (refitting G2)\\"
+    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Cumulative\\168x16\\Fitfiles (re-fitting including G2)\\"
 
     fitfiles = []
     os.chdir(fitfile_path)
