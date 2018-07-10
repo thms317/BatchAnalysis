@@ -10,12 +10,12 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 4769  # number of base pairs
+    pars['L_bp'] = 4092  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = 169  # nucleosome repeat length
-    pars['repeats'] = 16  # number of repeats
+    pars['NRL'] = 172  # nucleosome repeat length
+    pars['repeats'] = 12  # number of repeats
     pars['type'] = "Human"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
@@ -27,8 +27,8 @@ p = default_pars()
 def main_measurement_files():
     plt.close("all")
 
-    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-    table_file = "180622_171"
+    table_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
+    table_file = "180629"
 
     measurements = ba.build_measurements(table_path, table_file + ".txt", p)
     drift_arr = []
@@ -116,7 +116,7 @@ def main_measurement_files():
 
 
 def main_fitfiles():
-    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\180621\\Fitfiles (refitting G2)\\"
+    fitfile_path = "C:\\Users\\tbrouwer\\Desktop\\testing\\"
 
     fitfiles = []
     os.chdir(fitfile_path)
@@ -174,7 +174,7 @@ def main_fitfiles():
 
         # print pars in figure
         report = str(table[0]) + '\n' + str(table[1]) + '\n' + str(table[6]) + '\n' + str(table[2]) + '\n' + str(table[3]) + '\n' + str(
-            table[4]) + '\n' + str(table[5]) + '\n' + str(table[2])
+            table[4]) + '\n' + str(table[5]) + '\n' + str(table[7])
         ax1.annotate(report, xy=(0, 0.75), xytext=(12, -12), va='top', xycoords='axes fraction',
                      textcoords='offset points')
 

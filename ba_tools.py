@@ -49,10 +49,18 @@ def read_analyze(measurement, pars):
         # number of beads
         file_log = file_location + file_name + ".log"
         f = open(file_log, 'r')
-        beads = f.readlines()[9]
+        try:
+            beads = f.readlines()[9]
+        except:
+            headers = list(df)
+            # get number of beads
+            beads = headers[len(headers) - 1]
         f.close()
 
-        beads = int(func.get_num(beads))
+        try:
+            beads = int(func.get_num(beads))
+        except:
+            beads = func.get_int(beads)
 
         drift = []
         for i in range(beads):
@@ -260,7 +268,7 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     if mask:
         # calculating the mask
         # rupt, mask, test = filter_rupture(fitfile, test=True)  # use to check if results do not make sense
-        rupt, mask = filter_rupture(fitfile)
+        rupt, peak_index, mask = filter_rupture(fitfile)
 
         # applying the mask
         time = time[mask == 1]
@@ -281,6 +289,9 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     factor = max(diff_force / 1000)
 
     if standard_trajectory:
+
+        print(len(time))
+
         f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
         f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
         z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
@@ -335,12 +346,12 @@ def filter_rupture(fitfile, test=False):
     Z = np.array(df['Z' + str(bead) + ' (um)'])
 
     # does the tether rupture?
-    rupt, mask = func.rupture(time, amplitude, mask=True)
+    rupt, peak_index, mask = func.rupture(time, amplitude, mask=True)
 
     if test:
-        return rupt, mask, Z
+        return rupt, peak_index, mask, Z
     else:
-        return rupt, mask
+        return rupt, peak_index, mask
 
 
 def build_measurements(table_path, table_file, pars):
@@ -383,10 +394,10 @@ def read_logfile(logfile_path, logfile):
     fit_pars.append(func.get_num(log[i + 10][14:]))  # N_unfolded
     fit_pars.append(round(func.get_num(log[i + 9]),3))  # k
     fit_pars.append(round(func.get_num(log[i + 13][4:]),3))  # G1
-    fit_pars.append(func.get_num(log[i + 14][4:]))  # G2
+    fit_pars.append(round(func.get_num(log[i + 14][4:]),3))  # G2
     fit_pars.append(func.get_num(log[i + 16][16:]))  # degeneracy
     fit_pars.append(func.get_num(log[i + 7]) - func.get_num(log[i + 10][14:])) # stacked nucleosomes
-    fit_pars.append(func.get_num(log[i + 4])) # Stretch Modulus
+    fit_pars.append(func.get_num(log[i + 5])) # Stretch Modulus
 
 
     errors = [[], [], []]
@@ -411,9 +422,9 @@ def read_logfile(logfile_path, logfile):
         p5 = "Degeneracy = " + str(fit_pars[5])
         p6 = "Stacked Nucleosomes = " + str(fit_pars[6])
         if int(fit_pars[7]) != 1000:
-            p7 = "Stretch Modulus = " + str(fit_pars[7])
+            p7 = "S (pN) = " + str(fit_pars[7])
         else:
-            p7 = []
+            p7 = ''
 
     except:
 
@@ -425,9 +436,9 @@ def read_logfile(logfile_path, logfile):
         p5 = "Degeneracy = " + str(fit_pars[5])
         p6 = "Stacked Nucleosomes = " + str(fit_pars[6])
         if int(fit_pars[7]) != 1000:
-            p7 = "Stretch Modulus = " + str(fit_pars[7])
+            p7 = "S (pN) = " + str(fit_pars[7])
         else:
-            p7 = []
+            p7 = ''
 
     table = [p0, p1, p2, p3, p4, p5, p6, p7]
 
@@ -506,7 +517,7 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     ax3.tick_params(direction='in', top=True, right=True)
     ax3.set_title("Stacking Energy G1")
     ax3.hist(ass_fit_pars[3], bins=np.arange(min(ass_fit_pars[3]), max(ass_fit_pars[3]) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
-    ax3.set_xlim(0,22)
+    ax3.set_xlim(0,30)
 
     # G2
     ax4 = fig.add_subplot(2, 2, 4)
@@ -516,7 +527,7 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     ax4.tick_params(direction='in', top=True, right=True)
     ax4.set_title("Interaction Energy G2")
     ax4.hist(ass_fit_pars[4], bins=np.arange(min(ass_fit_pars[4]), max(ass_fit_pars[4]) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
-    ax4.set_xlim(0,22)
+    ax4.set_xlim(0,30)
 
     # # Degeneracy
     # ax5 = fig.add_subplot(2, 3, 6)
@@ -535,3 +546,27 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     fig.savefig(new_path+p['NRL_str']+"_pars")
 
     return
+
+
+def init_measurement_pars():
+    meas_pars = {}
+    meas_pars['date'] = []  # date of measurement
+    meas_pars['data'] = []  # measurement
+    meas_pars['bead'] = []  # bead
+    meas_pars['beads'] = []  # number of beads
+    meas_pars['points'] = []  # number of data-points
+    meas_pars['points_frac'] = []  # number of data-points
+    meas_pars['X0'] = []  # global X-position
+    meas_pars['Y0'] = []  # global Y-position
+    meas_pars['Z0'] = []  # global Z-position
+    meas_pars['dZ'] = []  # absolute Z-extension (after drift correction)
+    meas_pars['L_bp'] = []  # number of base pairs
+
+    meas_pars['L_bp'] = []  # number of base pairs
+    meas_pars['P_nm'] = []  # persistence length
+    meas_pars['S_pN'] = []  # stretch modulus
+    meas_pars['NRL'] = []  # nucleosome repeat length
+    meas_pars['repeats'] = []  # number of repeats
+    meas_pars['drift'] = []
+
+    return meas_pars

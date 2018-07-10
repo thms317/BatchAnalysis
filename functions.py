@@ -99,6 +99,8 @@ def reject_outliers(data):
 def get_num(x):
     return float(''.join(ele for ele in x if ele.isdigit() or ele == '.'))
 
+def get_int(string):
+    return int(''.join(x for x in string if x.isdigit()))
 
 def peak_finder(y):  # Finds y peaks at position x in xy graph
     y = np.array(y)
@@ -188,6 +190,7 @@ def rupture(time, amplitude, mask=False):
     std_diff_amp = abs(np.std(diff_amp))
     peak = max(abs(diff_amp))
 
+
     # classify as 'tether break' if absolute diff(amplitude) maximum exceeds n times the std
     n = 10
 
@@ -202,11 +205,12 @@ def rupture(time, amplitude, mask=False):
                 mask_on = np.ones(peak_index)
                 fuck_it_mask_off = np.zeros(len(amplitude) - peak_index)
                 mask = np.concatenate((mask_on, fuck_it_mask_off))
-                return True, mask
+                return True, peak_index, mask
             else:
-                return False, mask
+                return False, peak_index, mask
         else:
-            return False, mask
+            peak_index = None
+            return False, peak_index, mask
 
 
     else:
@@ -216,8 +220,9 @@ def rupture(time, amplitude, mask=False):
             average_after = np.mean(amplitude[peak_index:])
             mean_diff = abs(average_after - average_before)
             if mean_diff > 2 * abs(np.std(amplitude)):
-                return True
+                return True, peak_index
             else:
-                return False
+                return False, peak_index
         else:
-            return False
+            peak_index = None
+            return False, peak_index
