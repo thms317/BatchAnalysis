@@ -230,15 +230,21 @@ def read_analyze_rot(measurement, pars):
     return twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg
 
 
-def read_fitfiles(fitfile_path, fitfile, pars):
+def read_fitfiles(fitfile_path, fitfile, pars, meas_pars):
     try:
         p = pars
     except:
         print('Error: no parameters')
         return
 
-    mask = True
     standard_trajectory = True
+
+    m = meas_pars
+
+    m['date'] = fitfile[:6]
+    m['data'] = fitfile[12:15]
+    m['bead'] = fitfile[:-4][16:]
+    m['repeats'] = p['repeats']
 
     #  laptop or work PC
     bool = os.path.isdir(fitfile_path)
@@ -265,20 +271,22 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     T2 = np.array(df.iloc[:, t2:1 + trans_number + t2])
     T3 = np.array(df.iloc[:, t3:1 + trans_number + t3])
 
-    if mask:
-        # calculating the mask
-        # rupt, mask, test = filter_rupture(fitfile, test=True)  # use to check if results do not make sense
-        rupt, peak_index, mask = filter_rupture(fitfile)
+    # calculating the mask
+    rupt, mask = filter_rupture(fitfile, m)
+    m['points'] = len(time)
+    m['points_frac'] = m['points'] / m['points_exp']
 
-        # applying the mask
-        time = time[mask == 1]
-        force = force[mask == 1]
-        z = z[mask == 1]
-        z_fit = z_fit[mask == 1]
+    # applying the mask
+    time = time[mask == 1]
+    force = force[mask == 1]
+    z = z[mask == 1]
+    z_fit = z_fit[mask == 1]
 
-        T1 = T1[mask == 1]  # filter the transitions
-        T2 = T2[mask == 1]
-        T3 = T3[mask == 1]
+    T1 = T1[mask == 1]  # filter the transitions
+    T2 = T2[mask == 1]
+    T3 = T3[mask == 1]
+
+    m['dZ_um'] = abs(np.percentile(z, 1)-np.percentile(z, 99))
 
     # calculating the first derivative of force
     dx = np.diff(time)
@@ -289,8 +297,6 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     factor = max(diff_force / 1000)
 
     if standard_trajectory:
-
-        print(len(time))
 
         f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
         f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
@@ -319,7 +325,9 @@ def read_fitfiles(fitfile_path, fitfile, pars):
     # return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, time_pull, time_release, force, z, time
 
 
-def filter_rupture(fitfile, test=False):
+def filter_rupture(fitfile, meas_pars, test=False):
+    m = meas_pars
+
     #  laptop or work PC
     folder = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
     bool = os.path.isdir(folder)
@@ -330,6 +338,14 @@ def filter_rupture(fitfile, test=False):
     file_location = folder + str(fitfile[:6]) + "\\"
     file_name = str(fitfile[7:15]) + ".dat"
     bead = fitfile[16:-4]
+
+    # read logfile
+    log_name = str(fitfile[7:15]) + ".log"
+    f = open(file_location + log_name, 'r')
+    log = f.readlines()[:]
+    f.close()
+    m['points_exp'] = func.get_num(log[8])
+    m['beads'] = func.get_num(log[9])
 
     # because of this annoying bug in the LabVIEW program, offset bead no. by 2
     bead = int(bead)
@@ -343,15 +359,28 @@ def filter_rupture(fitfile, test=False):
 
     time = np.array(df['Time (s)'])
     amplitude = np.array(df['Amp' + str(bead) + ' (a.u.)'])
+    X = np.array(df['X' + str(bead) + ' (um)'])
+    Y = np.array(df['Y' + str(bead) + ' (um)'])
     Z = np.array(df['Z' + str(bead) + ' (um)'])
+
+    m['X0_um'] = np.mean(X)
+    m['Y0_um'] = np.mean(Y)
+    m['Z0_um'] = np.mean(Z)
+    m['amp'] = np.mean(amplitude)
 
     # does the tether rupture?
     rupt, peak_index, mask = func.rupture(time, amplitude, mask=True)
 
+    if rupt:
+        magnet = np.array(df['Stepper shift (mm)'])
+        force = func.calc_force(magnet)
+        f_rupt = force[peak_index]
+        m['f_rupt_pN'] = f_rupt
+
     if test:
-        return rupt, peak_index, mask, Z
+        return rupt, mask, Z
     else:
-        return rupt, peak_index, mask
+        return rupt, mask
 
 
 def build_measurements(table_path, table_file, pars):
@@ -378,7 +407,9 @@ def build_measurements(table_path, table_file, pars):
     return measurements
 
 
-def read_logfile(logfile_path, logfile):
+def read_logfile(logfile_path, logfile, meas_pars):
+
+    m = meas_pars
 
     f = open(logfile_path + logfile, 'r')
     log = f.readlines()[:]
@@ -399,6 +430,22 @@ def read_logfile(logfile_path, logfile):
     fit_pars.append(func.get_num(log[i + 7]) - func.get_num(log[i + 10][14:])) # stacked nucleosomes
     fit_pars.append(func.get_num(log[i + 5])) # Stretch Modulus
 
+    m['drift_nm_s'] = func.get_num(log[i + 2])
+    m['L_bp'] = func.get_num(log[i + 3])
+    m['P_nm'] = func.get_num(log[i + 4])
+    m['S_pN'] = func.get_num(log[i + 5])
+    m['NRL'] = func.get_num(log[i + 6])
+    m['N_nuc'] = func.get_num(log[i + 7])
+    m['N_tet'] = func.get_num(log[i + 10][14:])
+    m['N_stack'] = func.get_num(log[i + 7]) - func.get_num(log[i + 10][14:])
+    m['k_pN_nm'] = func.get_num(log[i + 9])
+    m['G1_kT'] = func.get_num(log[i + 13][4:])
+    m['G2_kT'] = func.get_num(log[i + 14][4:])
+    m['G3_kT'] = func.get_num(log[i + 15][4:])
+    m['L_fold'] = func.get_num(log[i + 8])
+    m['L_unwrap'] = func.get_num(log[i + 11])
+    m['L_ext'] = func.get_num(log[i + 12])
+    m['degeneracy'] = func.get_num(log[i + 16][16:])
 
     errors = [[], [], []]
     try:
@@ -407,12 +454,15 @@ def read_logfile(logfile_path, logfile):
         for error in range(j, len(log)):
             if "k folded (pN/nm)" in log[error]:
                 errors[0] = round(func.get_num(log[error]),3)  # place k-error in errors[0]
+                m['k_pN_nm_se'] = func.get_num(log[error])
             if "G1 (kT)" in log[error]:
                 strip_log = log[error][2:]
                 errors[1] = round(func.get_num(strip_log),3)  # place G1-error in errors[1]
+                m['G1_kT_se'] = func.get_num(strip_log)
             if "G2 (kT)" in log[error]:
                 strip_log = log[error][2:]
                 errors[2] = round(func.get_num(strip_log),3)  # place G2-error in errors[2]
+                m['G2_kT_se'] = func.get_num(strip_log)
 
         p0 = "N_nuc = " + str(fit_pars[0])
         p1 = "N_unfolded = " + str(fit_pars[1])
@@ -548,25 +598,39 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     return
 
 
-def init_measurement_pars():
+def measurement_pars():
     meas_pars = {}
     meas_pars['date'] = []  # date of measurement
     meas_pars['data'] = []  # measurement
     meas_pars['bead'] = []  # bead
     meas_pars['beads'] = []  # number of beads
     meas_pars['points'] = []  # number of data-points
-    meas_pars['points_frac'] = []  # number of data-points
-    meas_pars['X0'] = []  # global X-position
-    meas_pars['Y0'] = []  # global Y-position
-    meas_pars['Z0'] = []  # global Z-position
-    meas_pars['dZ'] = []  # absolute Z-extension (after drift correction)
+    meas_pars['points_exp'] = []  # number of expected data-points
+    meas_pars['points_frac'] = []  # fraction of data-points
+    meas_pars['X0_um'] = []  # global X-position (um)
+    meas_pars['Y0_um'] = []  # global Y-position (um)
+    meas_pars['Z0_um'] = []  # global Z-position (um)
+    meas_pars['dZ_um'] = []  # absolute Z-extension after drift correction(um)
+    meas_pars['amp'] = []  # mean amplitude
+    meas_pars['drift_nm_s'] = []  # drift (nm/s)
     meas_pars['L_bp'] = []  # number of base pairs
-
-    meas_pars['L_bp'] = []  # number of base pairs
-    meas_pars['P_nm'] = []  # persistence length
-    meas_pars['S_pN'] = []  # stretch modulus
+    meas_pars['P_nm'] = []  # persistence length (nm)
+    meas_pars['S_pN'] = []  # stretch modulus (pN)
     meas_pars['NRL'] = []  # nucleosome repeat length
     meas_pars['repeats'] = []  # number of repeats
-    meas_pars['drift'] = []
-
+    meas_pars['N_nuc'] = []  # number of steps
+    meas_pars['N_tet'] = []  # number of tetrasomes
+    meas_pars['N_stack'] = []  # number of stacked nucleosomes
+    meas_pars['k_pN_nm'] = []  # fiber stiffness (pN/nm)
+    meas_pars['k_pN_nm_se'] = []  # standard error fiber stiffness (pN/nm)
+    meas_pars['G1_kT'] = []  # G1 (kT)
+    meas_pars['G1_kT_se'] = []  # standard error G1 (kT)
+    meas_pars['G2_kT'] = []  # G2 (kT)
+    meas_pars['G2_kT_se'] = []  # standard error G2 (kT)
+    meas_pars['G3_kT'] = []  # G3 (kT)
+    meas_pars['L_fold'] = []  # folded length (nm/nuc) - standard: 1.5 nm/nuc
+    meas_pars['L_unwrap'] = []  # unwrapped length (basepairs/nucleosome) - standard: 56 bp/nuc
+    meas_pars['L_ext'] = []  # extended length (nm/nucleosome) - standard: 5 nm/nuc
+    meas_pars['degeneracy'] = []  # degeneracy (0 = two-start, 1 = one-start helix)
+    meas_pars['f_rupt_pN'] = []  # rupture force (pN)
     return meas_pars

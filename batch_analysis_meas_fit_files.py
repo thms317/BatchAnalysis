@@ -5,6 +5,7 @@ import ba_tools as ba
 import glob
 import numpy as np
 import csv
+import json
 
 def default_pars():
     pars = {}
@@ -118,6 +119,8 @@ def main_measurement_files():
 def main_fitfiles():
     fitfile_path = "C:\\Users\\tbrouwer\\Desktop\\testing\\"
 
+    M = []
+
     fitfiles = []
     os.chdir(fitfile_path)
     for file in glob.glob("*.fit"):
@@ -127,14 +130,17 @@ def main_fitfiles():
     ass_fit_errors = []
 
     for fitfile in fitfiles:
+
+        m = ba.measurement_pars()
+
         print("Processing fitfile... " + str(fitfile))
 
-        f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p)
+        f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles(fitfile_path, fitfile, p, m)
         wlc = np.transpose(transitions[2])[-1]
 
         # read pars from logfile
         logfile = fitfile[:-3] + "log"
-        fit_pars, fit_errors, table = ba.read_logfile(fitfile_path, logfile)
+        fit_pars, fit_errors, table = ba.read_logfile(fitfile_path, logfile, m)
         ass_fit_pars.append(fit_pars)
         ass_fit_errors.append(fit_errors)
 
@@ -202,9 +208,13 @@ def main_fitfiles():
         # plt.show()
         plt.close()
 
+        M.append(m)
+
     # assemble parameters into histogram
     if p['save'] == True:
         ba.plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot=False)
+        with open(fitfile_path + "assembled_pars.json",'w') as f:
+            f.write(json.dumps(M))
 
     return
 
