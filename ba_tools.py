@@ -420,7 +420,7 @@ def read_logfile(logfile_path, logfile):
         p3 = "G1 (kT) = " + str(fit_pars[3]) + " +/- " + str(errors[1])
         p4 = "G2 (kT) = " + str(fit_pars[4]) + " +/- " + str(errors[2])
         p5 = "Degeneracy = " + str(fit_pars[5])
-        p6 = "Stacked Nucleosomes = " + str(fit_pars[6])
+        p6 = "N_stacked = " + str(fit_pars[6])
         if int(fit_pars[7]) != 1000:
             p7 = "S (pN) = " + str(fit_pars[7])
         else:
