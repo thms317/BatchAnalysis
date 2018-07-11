@@ -5,7 +5,7 @@ import ba_tools as ba
 import glob
 import numpy as np
 import csv
-import json
+import pandas as pd
 
 def default_pars():
     pars = {}
@@ -17,7 +17,7 @@ def default_pars():
     pars['z0_nm'] = 0  # offset in nm / subunit
     pars['NRL'] = 172  # nucleosome repeat length
     pars['repeats'] = 12  # number of repeats
-    pars['type'] = "Human"  # type of histone
+    pars['type'] = "human"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
@@ -117,7 +117,7 @@ def main_measurement_files():
 
 
 def main_fitfiles():
-    fitfile_path = "C:\\Users\\tbrouwer\\Desktop\\testing\\"
+    fitfile_path = "C:\\Users\\tbrouwer\\Desktop\\172x12\\Fitfiles (172) - selected\\"
 
     M = []
 
@@ -213,8 +213,17 @@ def main_fitfiles():
     # assemble parameters into histogram
     if p['save'] == True:
         ba.plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot=False)
-        with open(fitfile_path + "assembled_pars.json",'w') as f:
-            f.write(json.dumps(M))
+
+        values = []
+        for n, dict in enumerate(M):
+            if n == 0:
+                keys = list(dict.keys())
+            values.append(list(dict.values()))
+
+        df = pd.DataFrame(data=values)
+        df.columns = keys
+
+        df.to_csv(fitfile_path + p['NRL_str']+ "_assembled_pars.dat", sep='\t')
 
     return
 

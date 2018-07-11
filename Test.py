@@ -1,32 +1,20 @@
+import json
 import pandas as pd
-import numpy as np
-import functions as func
-import matplotlib.pyplot as plt
 
-good = "C:\\Users\\brouw\\Desktop\\13_good_21_bad\\data_013.dat"
-bad = "C:\\Users\\brouw\\Desktop\\13_good_21_bad\\data_021.dat"
+dir = "C:\\Users\\tbrouwer\\Desktop\\testing\\"
+json_file = "172x12_human_assembled_pars.json"
+df_file = "dataframe.dat"
 
-# read DataFrame
-# df = pd.read_csv(good, sep="\t")
-df = pd.read_csv(bad, sep="\t")
+with open(dir + json_file, 'r') as read_file:
+    list_of_dict = json.loads(read_file.read())
 
-time = df['Time (s)']
-magnet = df['Stepper shift (mm)']
+values = []
+for n, dict in enumerate(list_of_dict):
+    if n == 0:
+        keys = list(dict.keys())
+    values.append(list(dict.values()))
 
-# for n in range(len(df.columns)):
-#     column = np.array(df.ix[:,n])
-#     bool = np.isnan(column)
-#     if True in bool:
-#         print("Something is amiss")
+df = pd.DataFrame(data=values)
+df.columns = keys
 
-force = func.calc_force(magnet)
-
-# print(np.isnan(force).any())
-
-# calculating the first derivative of magnet
-dx = np.diff(time)
-dy = np.diff(magnet)
-# diff_magnet = np.append([0], np.divide(dy, dx))  # add a zero as first element
-
-plt.scatter(np.arange(0,len(dx)),dx)
-plt.show()
+df.to_csv(dir + df_file, sep='\t')
