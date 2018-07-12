@@ -44,53 +44,40 @@ def read_analyze(measurement, pars):
     force = func.calc_force(magnet)
     Z = np.array(df['Z' + str(bead) + ' (um)'])
 
-    if global_drift:
+    # number of beads
+    file_log = file_location + file_name + ".log"
+    f = open(file_log, 'r')
+    try:
+        beads = f.readlines()[9]
+    except:
+        headers = list(df)
+        # get number of beads
+        beads = headers[len(headers) - 1]
+    f.close()
 
-        # number of beads
-        file_log = file_location + file_name + ".log"
-        f = open(file_log, 'r')
-        try:
-            beads = f.readlines()[9]
-        except:
-            headers = list(df)
-            # get number of beads
-            beads = headers[len(headers) - 1]
-        f.close()
+    try:
+        beads = int(func.get_num(beads))
+    except:
+        beads = func.get_int(beads)
 
-        try:
-            beads = int(func.get_num(beads))
-        except:
-            beads = func.get_int(beads)
+    drift = []
+    for i in range(beads):
+        z_drift = np.array(df['Z' + str(i) + ' (um)'])
+        amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
 
-        drift = []
-        for i in range(beads):
-            z_drift = np.array(df['Z' + str(i) + ' (um)'])
-            amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
+        # does the tether rupture?
+        rupt, _ = func.rupture(time, amplitude_drift)
 
-            # does the tether rupture?
-            rupt = func.rupture(time, amplitude_drift)
+        if rupt == False:
+            drift.append(func.drift_self(z_drift, time))
 
-            if rupt == False:
-                drift.append(func.drift_self(z_drift, time))
-
+    if not drift:
+        p['drift'] = 'uncorrected'
+        drift_med = 0
+    else:
         drift_med = float(np.median(drift))
         Z = Z - (drift_med / 1000) * time
         p['drift'] = str(round(drift_med, 3)) + " nm/s (global drift)"
-
-    else:
-
-        amplitude = np.array(df['Amp' + str(bead) + ' (a.u.)'])
-
-        # does the tether rupture?
-        rupt = func.rupture(time, amplitude)
-
-        if rupt == False:
-            # correcting the drift using self
-            drift = func.drift_self(Z, time)
-            Z = Z - (drift / 1000) * time
-            p['drift'] = str(round(drift, 3)) + " nm/s"
-        else:
-            p['drift'] = 'uncorrected'
 
     # calculating the first derivative of magnet
     dx = np.diff(time)
@@ -131,8 +118,6 @@ def read_analyze_rot(measurement, pars):
         print('Error: no parameters')
         return
 
-    global_drift = True
-
     # constants from parameters
     L_bp = p['L_bp']  # contour length (bp)
     S_pN = p['S_pN']  # stretch modulus (pN)
@@ -167,45 +152,32 @@ def read_analyze_rot(measurement, pars):
     time = np.array(df['Time (s)'])
     Z = np.array(df['Z' + str(bead) + ' (um)'])
 
-    if global_drift:
+    # number of beads
+    file_log = file_location + file_name + ".log"
+    f = open(file_log, 'r')
+    beads = f.readlines()[9]
+    f.close()
 
-        # number of beads
-        file_log = file_location + file_name + ".log"
-        f = open(file_log, 'r')
-        beads = f.readlines()[9]
-        f.close()
+    beads = int(func.get_num(beads))
 
-        beads = int(func.get_num(beads))
-
-        drift = []
-        for i in range(beads):
-            z_drift = np.array(df['Z' + str(i) + ' (um)'])
-            amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
-
-            # does the tether rupture?
-            rupt = func.rupture(time, amplitude_drift)
-
-            if rupt == False:
-                drift.append(func.drift_self(z_drift, time))
-
-        drift_med = np.median(drift)
-        Z = Z - (drift_med / 1000) * time
-        p['drift'] = str(round(drift_med, 3)) + " nm/s (global drift)"
-
-    else:
-
-        amplitude = np.array(df['Amp' + str(bead) + ' (a.u.)'])
+    drift = []
+    for i in range(beads):
+        z_drift = np.array(df['Z' + str(i) + ' (um)'])
+        amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
 
         # does the tether rupture?
-        rupt = func.rupture(time, amplitude)
+        rupt, _ = func.rupture(time, amplitude_drift)
 
         if rupt == False:
-            # correcting the drift using self
-            drift = func.drift_self(Z, time)
-            Z = Z - (drift / 1000) * time
-            p['drift'] = str(round(drift, 3)) + " nm/s"
-        else:
-            p['drift'] = 'uncorrected'
+            drift.append(func.drift_self(z_drift, time))
+
+    if not drift:
+        p['drift'] = 'uncorrected'
+
+    else:
+        drift_med = float(np.median(drift))
+        Z = Z - (drift_med / 1000) * time
+        p['drift'] = str(round(drift_med, 3)) + " nm/s (global drift)"
 
     # calculating the first derivative of magnet
     dx = np.diff(time)
@@ -237,7 +209,7 @@ def read_fitfiles(fitfile_path, fitfile, pars, meas_pars):
         print('Error: no parameters')
         return
 
-    standard_trajectory = True
+    standard_trajectory = p['standard']
 
     m = meas_pars
 
@@ -298,16 +270,27 @@ def read_fitfiles(fitfile_path, fitfile, pars, meas_pars):
 
     if standard_trajectory:
 
-        f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
-        z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
-        time_pull = time[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        time_release = time[np.where((diff_force < factor) & (time > 75) & (time < 125))]
-        z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        T1 = T1[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        T2 = T2[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        T3 = T3[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        f_pull = force[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        f_release = force[np.where((diff_force < factor) & (time > 120))]
+        z_pull = z[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        z_release = z[np.where((diff_force < factor) & (time > 120))]
+        time_pull = time[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        time_release = time[np.where((diff_force < factor) & (time > 120))]
+        z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        T1 = T1[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        T2 = T2[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        T3 = T3[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+
+        # f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        # z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        # time_pull = time[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # time_release = time[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        # z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # T1 = T1[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # T2 = T2[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # T3 = T3[np.where((diff_force > factor) & (time > 50) & (time < 80))]
 
     else:
         f_pull = force[np.where(diff_force > factor)]
@@ -344,8 +327,8 @@ def filter_rupture(fitfile, meas_pars, test=False):
     f = open(file_location + log_name, 'r')
     log = f.readlines()[:]
     f.close()
-    m['points_exp'] = func.get_num(log[8])
     m['beads'] = func.get_num(log[9])
+    framerate = func.get_num(log[5])
 
     # because of this annoying bug in the LabVIEW program, offset bead no. by 2
     bead = int(bead)
@@ -363,10 +346,11 @@ def filter_rupture(fitfile, meas_pars, test=False):
     Y = np.array(df['Y' + str(bead) + ' (um)'])
     Z = np.array(df['Z' + str(bead) + ' (um)'])
 
-    m['X0_um'] = np.mean(X)
-    m['Y0_um'] = np.mean(Y)
-    m['Z0_um'] = np.mean(Z)
-    m['amp'] = np.mean(amplitude)
+    m['X0_um'] = np.mean(X[np.logical_not(np.isnan(X))])
+    m['Y0_um'] = np.mean(Y[np.logical_not(np.isnan(Y))])
+    m['Z0_um'] = np.mean(Z[np.logical_not(np.isnan(Z))])
+    m['amp'] = np.mean(amplitude[np.logical_not(np.isnan(amplitude))])
+    m['points_exp'] = int(time[-1]*framerate)
 
     # does the tether rupture?
     rupt, peak_index, mask = func.rupture(time, amplitude, mask=True)
