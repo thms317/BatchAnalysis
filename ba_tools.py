@@ -150,6 +150,8 @@ def read_analyze_rot(measurement, pars):
         return [], [], [], [], [], []
 
     time = np.array(df['Time (s)'])
+    X = np.array(df['X' + str(bead) + ' (um)'])
+    Y = np.array(df['Y' + str(bead) + ' (um)'])
     Z = np.array(df['Z' + str(bead) + ' (um)'])
 
     # number of beads
@@ -194,10 +196,33 @@ def read_analyze_rot(measurement, pars):
     factor = max(diff_rot / 1000)
     twist_pos = rotation[diff_rot < factor]
     twist_neg = rotation[diff_rot > factor]
+    x_pos = X[diff_rot < factor]
+    x_neg = X[diff_rot > factor]
+    y_pos = Y[diff_rot < factor]
+    y_neg = Y[diff_rot > factor]
     z_pos = Z[diff_rot < factor]
     z_neg = Z[diff_rot > factor]
     lnd_pos = LND[diff_rot < factor]
     lnd_neg = LND[diff_rot > factor]
+
+    x_sel = np.concatenate((x_pos,x_neg))
+    y_sel = np.concatenate((y_pos,y_neg))
+
+    # fit circle to extract radius
+    x_m, y_m, R = fit_circle(x_sel,y_sel)
+    # alternative method (currently works better)
+    R2 = (abs(np.percentile(x_sel,1)-np.percentile(x_sel,99))/2+abs(np.percentile(y_sel,1)-np.percentile(y_sel,99))/2)/2
+    x_m_2 = np.percentile(x_sel,1)+R2
+    y_m_2 = np.percentile(y_sel,1)+R2
+
+    p['radius_um'] = R2
+
+    # plt.close()
+    # plt.scatter(x_sel,y_sel)
+    # plt.scatter(x_m, y_m)
+    # plt.scatter(x_m_2, y_m_2, color='r')
+    # plt.plot(x_m+R,y_m)
+    # plt.show()
 
     return twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg
 
@@ -582,6 +607,43 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     return
 
 
+def fit_circle(X, Y):
+    # thanks klaas
+
+    # coordinates of the barycenter
+    x_m = np.mean(X)
+    y_m = np.mean(Y)
+
+    # calculation of the reduced coordinates
+    u = X - x_m
+    v = Y - y_m
+
+    # linear system defining the center (uc, vc) in reduced coordinates:
+    #    Suu * uc +  Suv * vc = (Suuu + Suvv)/2
+    #    Suv * uc +  Svv * vc = (Suuv + Svvv)/2
+    Suv = sum(u * v)
+    Suu = sum(u ** 2)
+    Svv = sum(v ** 2)
+    Suuv = sum(u ** 2 * v)
+    Suvv = sum(u * v ** 2)
+    Suuu = sum(u ** 3)
+    Svvv = sum(v ** 3)
+
+    # Solving the linear system
+    A = np.array([[Suu, Suv], [Suv, Svv]])
+    B = np.array([Suuu + Suvv, Svvv + Suuv]) / 2.0
+    uc, vc = np.linalg.solve(A, B)
+
+    xc_1 = x_m + uc
+    yc_1 = y_m + vc
+
+    # Calcul des distances au centre (xc_1, yc_1)
+    Ri_1 = np.sqrt((X - xc_1) ** 2 + (Y - yc_1) ** 2)
+    R_1 = np.mean(Ri_1)
+    # residu_1 = sum((Ri_1-R_1)**2)
+    return x_m, y_m, R_1
+
+
 def measurement_pars():
     meas_pars = {}
     meas_pars['date'] = []  # date of measurement
@@ -617,4 +679,5 @@ def measurement_pars():
     meas_pars['L_ext'] = []  # extended length (nm/nucleosome) - standard: 5 nm/nuc
     meas_pars['degeneracy'] = []  # degeneracy (0 = two-start, 1 = one-start helix)
     meas_pars['f_rupt_pN'] = []  # rupture force (pN)
+    meas_pars['radius_um'] = []  # radius of circle (um)
     return meas_pars
