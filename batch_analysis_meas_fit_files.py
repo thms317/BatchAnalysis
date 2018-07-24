@@ -11,17 +11,18 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 4849  # number of base pairs
+    pars['L_bp'] = 4865  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = 175  # nucleosome repeat length
+    pars['NRL'] = 176  # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
-    pars['type'] = "tailless"  # type of histone
+    pars['type'] = "human"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
-    pars['standard'] = False
+    pars['standard'] = True
+    pars['radius_um'] = []  # radius of circle (um)
     return pars
 
 p = default_pars()
@@ -29,8 +30,8 @@ p = default_pars()
 def main_measurement_files():
     plt.close("all")
 
-    table_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
-    table_file = "180712_175"
+    table_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+    table_file = "180718_177"
 
     measurements = ba.build_measurements(table_path, table_file + ".txt", p)
     drift_arr = []
@@ -118,7 +119,7 @@ def main_measurement_files():
 
 
 def main_fitfiles():
-    fitfile_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\180712\\Fitfiles_175_refined_selection\\"
+    fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\Fitfiles_176\\"
 
     plot_rot = True
 
@@ -213,6 +214,7 @@ def main_fitfiles():
             measurement = [fitfile[:6],fitfile[12:15],fitfile[16:-4],p['NRL_str']]
             twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg = ba.read_analyze_rot(measurement, p)
             drift_rot = p['drift']
+            p['radius_um'] = m['radius_um']
 
             # rotation
             ax2 = fig.add_subplot(2, 2, 1)
