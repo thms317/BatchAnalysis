@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters\\clean\\"
-save_folder = "C:\\Users\\brouw\\Desktop\\Boxplots\\"
+folder = "C:\\Users\\tbrouwer\\Desktop\\clean\\"
+save_folder = "C:\\Users\\tbrouwer\\Desktop\\Boxplots\\"
 
 only_boxplots = True
 fancy = True

@@ -1,20 +1,16 @@
-import json
-import pandas as pd
+import numpy as np
 
-dir = "C:\\Users\\tbrouwer\\Desktop\\testing\\"
-json_file = "172x12_human_assembled_pars.json"
-df_file = "dataframe.dat"
+n_min=10
+X = [1,2,3,4,5,6,7,8,9,10]
 
-with open(dir + json_file, 'r') as read_file:
-    list_of_dict = json.loads(read_file.read())
+resample_i = np.floor(np.random.rand(n_min) * len(X)).astype(int)
 
-values = []
-for n, dict in enumerate(list_of_dict):
-    if n == 0:
-        keys = list(dict.keys())
-    values.append(list(dict.values()))
-
-df = pd.DataFrame(data=values)
-df.columns = keys
-
-df.to_csv(dir + df_file, sep='\t')
+X = np.array(X)
+print(resample_i)
+X_resample = np.array(X[resample_i])
+print(X_resample)
+# X_resample = np.array(X[resample_i])
+#
+#
+# x = bootstrap_resample(X,n_min)
+# print(x)

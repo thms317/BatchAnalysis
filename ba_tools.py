@@ -295,16 +295,16 @@ def read_fitfiles(fitfile_path, fitfile, pars, meas_pars):
 
     if standard_trajectory:
 
-        f_pull = force[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        f_pull = force[np.where((diff_force > factor) & (time > 90) & (time < 130))]
         f_release = force[np.where((diff_force < factor) & (time > 120))]
-        z_pull = z[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        z_pull = z[np.where((diff_force > factor) & (time > 90) & (time < 130))]
         z_release = z[np.where((diff_force < factor) & (time > 120))]
-        time_pull = time[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        time_pull = time[np.where((diff_force > factor) & (time > 90) & (time < 130))]
         time_release = time[np.where((diff_force < factor) & (time > 120))]
-        z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 90) & (time < 125))]
-        T1 = T1[np.where((diff_force > factor) & (time > 90) & (time < 125))]
-        T2 = T2[np.where((diff_force > factor) & (time > 90) & (time < 125))]
-        T3 = T3[np.where((diff_force > factor) & (time > 90) & (time < 125))]
+        z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T1 = T1[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T2 = T2[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T3 = T3[np.where((diff_force > factor) & (time > 90) & (time < 130))]
 
         # f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
         # f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
@@ -406,8 +406,10 @@ def build_measurements(table_path, table_file, pars):
 
     data = np.array(df['File'])[np.where(selected == 1)]
     bead = np.array(df['Trace'])[np.where(selected == 1)]
-    date = np.full((len(bead)), table_file[:6])
-    type = np.full((len(bead)), p['NRL_str'])
+    date, type = [], []
+    for n in range(len(bead)):
+        date.append(table_file[:6])
+        type.append(p['NRL_str'])
 
     measurements = []
     for n in range(len(bead)):
@@ -502,6 +504,72 @@ def read_logfile(logfile_path, logfile, meas_pars):
     table = [p0, p1, p2, p3, p4, p5, p6, p7]
 
     return fit_pars, errors, table
+
+def read_logfile_clean(logfile_path, logfile, pars):
+
+    p = pars
+
+    p['date'] = logfile[:6]
+    p['data'] = logfile[12:15]
+    p['bead'] = logfile[:-4][16:]
+
+    f = open(logfile_path + logfile, 'r')
+    log = f.readlines()[:]
+    f.close()
+
+    for n, line in enumerate(log):
+        log[n] = line.rstrip()
+
+    i = log.index("[Fit parameters]")
+
+    fit_pars = []
+    fit_pars.append(func.get_num(log[i + 7]))  # N_nuc
+    fit_pars.append(func.get_num(log[i + 10][14:]))  # N_unfolded
+    fit_pars.append(round(func.get_num(log[i + 9]),3))  # k
+    fit_pars.append(round(func.get_num(log[i + 13][4:]),3))  # G1
+    fit_pars.append(round(func.get_num(log[i + 14][4:]),3))  # G2
+    fit_pars.append(func.get_num(log[i + 16][16:]))  # degeneracy
+    fit_pars.append(func.get_num(log[i + 7]) - func.get_num(log[i + 10][14:])) # stacked nucleosomes
+    fit_pars.append(func.get_num(log[i + 5])) # Stretch Modulus
+
+    p['drift_nm_s'] = func.get_num(log[i + 2])
+    p['L_bp'] = func.get_num(log[i + 3])
+    p['P_nm'] = func.get_num(log[i + 4])
+    p['S_pN'] = func.get_num(log[i + 5])
+    p['NRL'] = func.get_num(log[i + 6])
+    p['N_nuc'] = func.get_num(log[i + 7])
+    p['N_tet'] = func.get_num(log[i + 10][14:])
+    p['N_stack'] = func.get_num(log[i + 7]) - func.get_num(log[i + 10][14:])
+    p['k_pN_nm'] = func.get_num(log[i + 9])
+    p['G1_kT'] = func.get_num(log[i + 13][4:])
+    p['G2_kT'] = func.get_num(log[i + 14][4:])
+    p['G3_kT'] = func.get_num(log[i + 15][4:])
+    p['L_fold'] = func.get_num(log[i + 8])
+    p['L_unwrap'] = func.get_num(log[i + 11])
+    p['L_ext'] = func.get_num(log[i + 12])
+    p['degeneracy'] = func.get_num(log[i + 16][16:])
+
+    errors = [[], [], []]
+    try:
+        j = log.index("[Fit local error]")
+
+        for error in range(j, len(log)):
+            if "k folded (pN/nm)" in log[error]:
+                errors[0] = round(func.get_num(log[error]),3)  # place k-error in errors[0]
+                p['k_pN_nm_se'] = func.get_num(log[error])
+            if "G1 (kT)" in log[error]:
+                strip_log = log[error][2:]
+                errors[1] = round(func.get_num(strip_log),3)  # place G1-error in errors[1]
+                p['G1_kT_se'] = func.get_num(strip_log)
+            if "G2 (kT)" in log[error]:
+                strip_log = log[error][2:]
+                errors[2] = round(func.get_num(strip_log),3)  # place G2-error in errors[2]
+                p['G2_kT_se'] = func.get_num(strip_log)
+
+    except:
+        pass
+
+    return fit_pars, errors
 
 
 def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
@@ -603,6 +671,81 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
         plt.show()
 
     fig.savefig(new_path+p['NRL_str']+"_pars")
+
+    return
+
+def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True, color='grey', zorder=0):
+
+    ass_fit_pars = np.transpose(np.array(ass_fit_pars))
+
+    # number of stacked nucleosomes in fiber
+    ax1 = fig.add_subplot(2, 2, 1)
+
+    ax1.set_ylabel('count')
+    ax1.set_xlabel('Stacked Nucleosomes in Fiber')
+    ax1.tick_params(direction='in', length=6, width=3, top=True, right=True)
+    ax1.set_title("Stacked Nucleosomes")
+    stacked=[]
+    for n,x in enumerate(ass_fit_pars[0]):
+        stacked.append(ass_fit_pars[0][n]-ass_fit_pars[1][n])
+    binwidth = 1 # nucleosomes
+    # ax1.hist(stacked, bins=np.arange(min(stacked), max(stacked) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+    ax1.hist(stacked, bins=np.arange(0,35, binwidth), edgecolor='black', linewidth=1.2,
+             color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+
+    # ax1.legend(loc=1, frameon=False)
+    ax1.set_xlim(5,30)
+    ax1.set_ylim(0,25)
+    ax1.yaxis.set_ticks(np.arange(0, 30, 5))
+
+    # stiffness
+    ax2 = fig.add_subplot(2, 2, 3)
+
+    ax2.set_ylabel('count')
+    ax2.set_xlabel('k (pN/nm)')
+    ax2.tick_params(direction='in', length=6, width=3, top=True, right=True)
+    ax2.set_title("Fiber Stiffness")
+    binwidth = 0.05  # pN/nm
+    # ax2.hist(ass_fit_pars[2], bins=np.arange(min(ass_fit_pars[2]), max(ass_fit_pars[2]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+    ax2.hist(ass_fit_pars[2], bins=np.arange(0,1,binwidth),
+             edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+    # ax2.legend(loc=1, frameon=False)
+    ax2.set_xlim(0,1)
+    ax2.set_ylim(0,25)
+    ax2.yaxis.set_ticks(np.arange(0, 30, 5))
+
+    # Stacking Energy G1
+
+    binwidth = 1.3  # kT
+
+    ax3 = fig.add_subplot(2, 2, 2)
+
+    ax3.set_ylabel('count')
+    ax3.set_xlabel('G1 (kT)')
+    ax3.tick_params(direction='in', length=6, width=3, top=True, right=True)
+    ax3.set_title("Stacking Energy G1")
+    # ax3.hist(ass_fit_pars[3], bins=np.arange(min(ass_fit_pars[3]), max(ass_fit_pars[3]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+    ax3.hist(ass_fit_pars[3], bins=np.arange(0,30,binwidth),
+             edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+    ax3.legend(loc=1, frameon=True)
+    ax3.set_xlim(0,30)
+    ax3.set_ylim(0,25)
+    ax3.yaxis.set_ticks(np.arange(0, 30, 5))
+
+    # G2
+    ax4 = fig.add_subplot(2, 2, 4)
+
+    ax4.set_ylabel('count')
+    ax4.set_xlabel('G2 (kT)')
+    ax4.tick_params(direction='in', length=6, width=3, top=True, right=True)
+    ax4.set_title("Interaction Energy G2")
+    # ax4.hist(ass_fit_pars[4], bins=np.arange(min(ass_fit_pars[4]), max(ass_fit_pars[4]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+    ax4.hist(ass_fit_pars[4], bins=np.arange(0,30, binwidth),
+             edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
+    # ax4.legend(loc=1, frameon=False)
+    ax4.set_xlim(0,30)
+    ax4.set_ylim(0,25)
+    ax4.yaxis.set_ticks(np.arange(0, 30, 5))
 
     return
 
