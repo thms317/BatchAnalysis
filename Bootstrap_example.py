@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 import numpy as np
 
-folder = "C:\\Users\\tbrouwer\\Desktop\\clean\\"
+folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters\\clean\\"
+save_folder = "C:\\Users\\tbrouwer\\Desktop\\Boxplots\\"
+
 df_G2 = pd.read_csv(folder + "G2_pars_all.dat", sep='\t')
 
 data = []
@@ -15,7 +17,7 @@ for n, key in enumerate(keys):
 
 boxplot, sub_keys, int_keys, length = [], [], [], []
 G2_tot = np.array([])
-NRLs = [3, 4, 6, 8, 10, 11, 12]
+NRLs = [3, 4, 6, 8, 10, 12]
 for n, i in enumerate(NRLs):
     boxplot.append(data[i])
     sub_keys.append(keys[i])
@@ -35,8 +37,10 @@ for n, i in enumerate(NRLs):
 # plt.title("G2 (kT)", fontsize=20)
 # plt.show()
 
+# remove lowest number of measurements
+# length.remove(min(length))
 n_min = min(length)
-
+print(length)
 def bootstrap_resample(X, n):
     X = np.array(X)
     resample_i = np.floor(np.random.rand(n) * len(X)).astype(int)
@@ -58,7 +62,6 @@ for b in range(n):
     matrix = np.concatenate((matrix, subset))
     means_boot.append(np.mean(subset))
     meds_boot.append(np.median(subset))
-    # TODO resample to n_min?
 
 matrix = matrix.reshape(n, n_min)  # not necessary anymore
 
@@ -68,6 +71,7 @@ meds_pooled = np.concatenate((meds_boot, meds_data))
 sorted_means = np.sort(means_pooled)
 sorted_meds = np.sort(meds_pooled)
 
+plt.figure(figsize=(12,6))
 plt.title("Empirical p-value (calculated with means)")
 plt.plot(means_pooled, 'b.', label = "means pooled")
 plt.plot(sorted_means, 'r.', label = "means pooled (sorted)")
@@ -79,9 +83,14 @@ for n,val in enumerate(means_data):
     else:
         perc *= 2
     plt.plot(x, val, '*', markersize=20, label=str(sub_keys[n])+" (emperical p-value = "+str(round(perc,2))+")")
+plt.xlabel("Sample number")
+plt.ylabel("G2 (kT)")
 plt.legend()
+plt.savefig(save_folder+"Emperical p-value (means)",dpi=600)
 plt.show()
+plt.close()
 
+plt.figure(figsize=(12,6))
 plt.title("Empirical p-value (calculated with medians)")
 plt.plot(meds_pooled, 'b.', label = "meds pooled")
 plt.plot(sorted_meds, 'r.', label = "meds pooled (sorted)")
@@ -94,4 +103,8 @@ for n,val in enumerate(meds_data):
         perc *= 2
     plt.plot(x, val, '*', markersize=20, label=str(sub_keys[n])+" (emperical p-value = "+str(round(perc,2))+")")
 plt.legend()
-plt.show()
+plt.savefig(save_folder+"Emperical p-value (median)",dpi=600)
+plt.xlabel("Sample number")
+plt.ylabel("G2 (kT)")
+# plt.show()
+plt.close()

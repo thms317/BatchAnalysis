@@ -357,7 +357,8 @@ def filter_rupture(fitfile, meas_pars, test=False):
 
     # because of this annoying bug in the LabVIEW program, offset bead no. by 2
     bead = int(bead)
-    bead = str(bead + 2)
+    # bead = str(bead + 2)
+    bead = str(bead)
 
     # title
     title = fitfile[:-4]
@@ -684,7 +685,7 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     ax1.set_ylabel('count')
     ax1.set_xlabel('Stacked Nucleosomes in Fiber')
     ax1.tick_params(direction='in', length=6, width=3, top=True, right=True)
-    ax1.set_title("Stacked Nucleosomes")
+    # ax1.set_title("Stacked Nucleosomes")
     stacked=[]
     for n,x in enumerate(ass_fit_pars[0]):
         stacked.append(ass_fit_pars[0][n]-ass_fit_pars[1][n])
@@ -694,24 +695,24 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
              color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
 
     # ax1.legend(loc=1, frameon=False)
-    ax1.set_xlim(5,30)
-    ax1.set_ylim(0,25)
+    ax1.set_xlim(4.9,30)
+    ax1.set_ylim(-0.1,25)
     ax1.yaxis.set_ticks(np.arange(0, 30, 5))
 
     # stiffness
     ax2 = fig.add_subplot(2, 2, 3)
 
     ax2.set_ylabel('count')
-    ax2.set_xlabel('k (pN/nm)')
+    ax2.set_xlabel('Fiber stiffness (pN/nm)')
     ax2.tick_params(direction='in', length=6, width=3, top=True, right=True)
-    ax2.set_title("Fiber Stiffness")
+    # ax2.set_title("Fiber Stiffness")
     binwidth = 0.05  # pN/nm
     # ax2.hist(ass_fit_pars[2], bins=np.arange(min(ass_fit_pars[2]), max(ass_fit_pars[2]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     ax2.hist(ass_fit_pars[2], bins=np.arange(0,1,binwidth),
              edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     # ax2.legend(loc=1, frameon=False)
-    ax2.set_xlim(0,1)
-    ax2.set_ylim(0,25)
+    ax2.set_xlim(-0.03,1)
+    ax2.set_ylim(-0.1,25)
     ax2.yaxis.set_ticks(np.arange(0, 30, 5))
 
     # Stacking Energy G1
@@ -723,13 +724,13 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     ax3.set_ylabel('count')
     ax3.set_xlabel('G1 (kT)')
     ax3.tick_params(direction='in', length=6, width=3, top=True, right=True)
-    ax3.set_title("Stacking Energy G1")
+    # ax3.set_title("Stacking Energy G1")
     # ax3.hist(ass_fit_pars[3], bins=np.arange(min(ass_fit_pars[3]), max(ass_fit_pars[3]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     ax3.hist(ass_fit_pars[3], bins=np.arange(0,30,binwidth),
              edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
-    ax3.legend(loc=1, frameon=True)
-    ax3.set_xlim(0,30)
-    ax3.set_ylim(0,25)
+    ax3.legend(loc=1, frameon=False)
+    ax3.set_xlim(-0.1,30)
+    ax3.set_ylim(-0.1,25)
     ax3.yaxis.set_ticks(np.arange(0, 30, 5))
 
     # G2
@@ -738,13 +739,13 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     ax4.set_ylabel('count')
     ax4.set_xlabel('G2 (kT)')
     ax4.tick_params(direction='in', length=6, width=3, top=True, right=True)
-    ax4.set_title("Interaction Energy G2")
+    # ax4.set_title("Interaction Energy G2")
     # ax4.hist(ass_fit_pars[4], bins=np.arange(min(ass_fit_pars[4]), max(ass_fit_pars[4]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     ax4.hist(ass_fit_pars[4], bins=np.arange(0,30, binwidth),
              edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     # ax4.legend(loc=1, frameon=False)
-    ax4.set_xlim(0,30)
-    ax4.set_ylim(0,25)
+    ax4.set_xlim(-0.1,30)
+    ax4.set_ylim(-0.1,25)
     ax4.yaxis.set_ticks(np.arange(0, 30, 5))
 
     return

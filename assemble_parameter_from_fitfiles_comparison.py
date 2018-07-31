@@ -12,7 +12,8 @@ assemble_pars_file = True
 
 save_folder = "C:\\Users\\tbrouwer\\Desktop\\Parameters vs Number of Repeats\\"
 
-fig = plt.figure(figsize=(30, 18))
+# fig = plt.figure(figsize=(30, 18))
+fig = plt.figure(figsize=(15, 9))
 plt.rcParams.update({'font.size': 35})  # legend + title size
 plt.rc('axes', linewidth=3)
 plt.rc('xtick', labelsize=35)
@@ -101,5 +102,5 @@ if assemble_pars_file:
 # save histograms
 # fig.suptitle("Mechanical Parameters of Chromatin are independent of Numbers of Repeats \n 197x15: n = "+str(n_15)+"    |    197x25: n = "+str(n_25))
 # fig.suptitle("Mechanical Parameters of Chromatin are independent of Numbers of Repeats")
-plt.tight_layout()
+# plt.tight_layout()
 plt.savefig(save_folder+"parameters_15x197_vs_25x197", dpi=600)
