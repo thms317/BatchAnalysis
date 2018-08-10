@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import ba_tools as ba
 import glob
 import pandas as pd
+import numpy as np
 
 p = {}
 
@@ -10,10 +11,10 @@ plt.close("all")
 
 assemble_pars_file = True
 
-save_folder = "C:\\Users\\tbrouwer\\Desktop\\Parameters vs Number of Repeats\\"
+save_folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters vs Number of Repeats\\"
 
-# fig = plt.figure(figsize=(30, 18))
-fig = plt.figure(figsize=(15, 9))
+fig = plt.figure(figsize=(30, 18))  # 4 graphs
+# fig = plt.figure(figsize=(15, 9))  # 1 graph
 plt.rcParams.update({'font.size': 35})  # legend + title size
 plt.rc('axes', linewidth=3)
 plt.rc('xtick', labelsize=35)
@@ -22,8 +23,10 @@ plt.rc('ytick', labelsize=35)
 
 # folder 1
 
-folder = "C:\\Users\\tbrouwer\\Desktop\\Parameters vs Number of Repeats\\197 x 15\\"
-p['NRL_str'] = "197x15"
+folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters vs Number of Repeats\\167 x 16\\"
+p['NRL_str'] = "167x16"
+# folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters vs Number of Repeats\\197 x 15\\"
+# p['NRL_str'] = "197x15"
 
 fitfiles = []
 os.chdir(folder)
@@ -62,8 +65,10 @@ if assemble_pars_file:
 
 # folder 2
 
-folder = "C:\\Users\\tbrouwer\\Desktop\\Parameters vs Number of Repeats\\197 x 25\\"
-p['NRL_str'] = "197x25"
+folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters vs Number of Repeats\\167 x 30\\"
+p['NRL_str'] = "167x30"
+# folder = "C:\\Users\\tbrouwer\\Desktop\\Parameters vs Number of Repeats\\197 x 25\\"
+# p['NRL_str'] = "197x25"
 
 fitfiles = []
 os.chdir(folder)
@@ -102,5 +107,7 @@ if assemble_pars_file:
 # save histograms
 # fig.suptitle("Mechanical Parameters of Chromatin are independent of Numbers of Repeats \n 197x15: n = "+str(n_15)+"    |    197x25: n = "+str(n_25))
 # fig.suptitle("Mechanical Parameters of Chromatin are independent of Numbers of Repeats")
-# plt.tight_layout()
-plt.savefig(save_folder+"parameters_15x197_vs_25x197", dpi=600)
+plt.tight_layout()
+
+# plt.savefig(save_folder+"parameters_197x15_vs_197x25", dpi=600)
+plt.savefig(save_folder+"parameters_167x16_vs_167x30", dpi=600)

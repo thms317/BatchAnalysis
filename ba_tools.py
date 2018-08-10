@@ -689,15 +689,17 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     stacked=[]
     for n,x in enumerate(ass_fit_pars[0]):
         stacked.append(ass_fit_pars[0][n]-ass_fit_pars[1][n])
-    binwidth = 1 # nucleosomes
+    binwidth = 2 # nucleosomes
     # ax1.hist(stacked, bins=np.arange(min(stacked), max(stacked) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     ax1.hist(stacked, bins=np.arange(0,35, binwidth), edgecolor='black', linewidth=1.2,
              color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
 
-    # ax1.legend(loc=1, frameon=False)
-    ax1.set_xlim(4.9,30)
-    ax1.set_ylim(-0.1,25)
-    ax1.yaxis.set_ticks(np.arange(0, 30, 5))
+    ax1.legend(loc=1, frameon=False)
+    ax1.set_xlim(0,40)
+    # ax1.set_ylim(-0.1,25)
+    ax1.set_ylim(-0.1, 20)
+    # ax1.yaxis.set_ticks(np.arange(0, 30, 5))
+    ax1.yaxis.set_ticks(np.arange(0, 25, 5))
 
     # stiffness
     ax2 = fig.add_subplot(2, 2, 3)
@@ -706,14 +708,19 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     ax2.set_xlabel('Fiber stiffness (pN/nm)')
     ax2.tick_params(direction='in', length=6, width=3, top=True, right=True)
     # ax2.set_title("Fiber Stiffness")
-    binwidth = 0.05  # pN/nm
+    binwidth = 0.15  # pN/nm - 167
+    # binwidth = 0.05  # pN/nm - 197
     # ax2.hist(ass_fit_pars[2], bins=np.arange(min(ass_fit_pars[2]), max(ass_fit_pars[2]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
-    ax2.hist(ass_fit_pars[2], bins=np.arange(0,1,binwidth),
+    ax2.hist(ass_fit_pars[2], bins=np.arange(0,3,binwidth),
              edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
-    # ax2.legend(loc=1, frameon=False)
-    ax2.set_xlim(-0.03,1)
-    ax2.set_ylim(-0.1,25)
-    ax2.yaxis.set_ticks(np.arange(0, 30, 5))
+
+    ax2.legend(loc=1, frameon=False)
+    # ax2.set_xlim(-0.03, 1)
+    ax2.set_xlim(-0.03, 3)
+    # ax2.set_ylim(-0.1,25)
+    ax2.set_ylim(-0.1,20)
+    # ax2.yaxis.set_ticks(np.arange(0, 30, 5))
+    ax2.yaxis.set_ticks(np.arange(0, 25, 5))
 
     # Stacking Energy G1
 
@@ -729,9 +736,12 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     ax3.hist(ass_fit_pars[3], bins=np.arange(0,30,binwidth),
              edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     ax3.legend(loc=1, frameon=False)
-    ax3.set_xlim(-0.1,30)
-    ax3.set_ylim(-0.1,25)
-    ax3.yaxis.set_ticks(np.arange(0, 30, 5))
+    # ax3.set_xlim(-0.1,30)
+    ax3.set_xlim(-0.1, 35)
+    # ax3.set_ylim(-0.1,25)
+    ax3.set_ylim(-0.1, 20)
+    # ax3.yaxis.set_ticks(np.arange(0, 30, 5))
+    ax3.yaxis.set_ticks(np.arange(0, 25, 5))
 
     # G2
     ax4 = fig.add_subplot(2, 2, 4)
@@ -743,10 +753,13 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     # ax4.hist(ass_fit_pars[4], bins=np.arange(min(ass_fit_pars[4]), max(ass_fit_pars[4]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     ax4.hist(ass_fit_pars[4], bins=np.arange(0,30, binwidth),
              edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
-    # ax4.legend(loc=1, frameon=False)
-    ax4.set_xlim(-0.1,30)
-    ax4.set_ylim(-0.1,25)
-    ax4.yaxis.set_ticks(np.arange(0, 30, 5))
+    ax4.legend(loc=1, frameon=False)
+    # ax4.set_xlim(-0.1,30)
+    ax4.set_xlim(-0.1, 35)
+    # ax4.set_ylim(-0.1,25)
+    ax4.set_ylim(-0.1,20)
+    # ax4.yaxis.set_ticks(np.arange(0, 30, 5))
+    ax4.yaxis.set_ticks(np.arange(0, 25, 5))
 
     return
 
