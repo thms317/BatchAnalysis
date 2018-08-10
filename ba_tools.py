@@ -619,9 +619,10 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     stacked=[]
     for n,x in enumerate(ass_fit_pars[0]):
         stacked.append(ass_fit_pars[0][n]-ass_fit_pars[1][n])
-    binwidth = 2 # nucleosomes
+    binwidth = 1 # nucleosomes
     ax1.hist(stacked, bins=np.arange(min(stacked), max(stacked) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
     ax1.set_xlim(0,30)
+    ax1.set_ylim(0,25)
 
     # stiffness
     ax2 = fig.add_subplot(2, 2, 3)
@@ -632,7 +633,8 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     ax2.set_title("Fiber Stiffness")
     binwidth = 0.1  # pN/nm
     ax2.hist(ass_fit_pars[2], bins=np.arange(min(ass_fit_pars[2]), max(ass_fit_pars[2]) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
-    ax2.set_xlim(0,2)
+    ax2.set_xlim(0,3)
+    ax2.set_ylim(0,25)
 
     # Stacking Energy G1
 
@@ -645,7 +647,8 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     ax3.tick_params(direction='in', top=True, right=True)
     ax3.set_title("Stacking Energy G1")
     ax3.hist(ass_fit_pars[3], bins=np.arange(min(ass_fit_pars[3]), max(ass_fit_pars[3]) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
-    ax3.set_xlim(0,30)
+    ax3.set_xlim(0,35)
+    ax3.set_ylim(0,25)
 
     # G2
     ax4 = fig.add_subplot(2, 2, 4)
@@ -655,7 +658,8 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     ax4.tick_params(direction='in', top=True, right=True)
     ax4.set_title("Interaction Energy G2")
     ax4.hist(ass_fit_pars[4], bins=np.arange(min(ass_fit_pars[4]), max(ass_fit_pars[4]) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
-    ax4.set_xlim(0,30)
+    ax4.set_xlim(0,35)
+    ax4.set_ylim(0,25)
 
     # # Degeneracy
     # ax5 = fig.add_subplot(2, 3, 6)
