@@ -16,7 +16,7 @@ fig = plt.figure(figsize=(30, 18))
 plt.rcParams.update({'font.size': 20})
 plt.rc('axes', linewidth=3)
 
-folder = "C:\\Users\\tbrouwer\\Desktop\\Parameters vs Number of Repeats\\167 x 15\\"
+folder = "C:\\Users\\brouw\\Desktop\\Data\\"
 p['NRL_str'] = "167x15"
 
 fitfiles = []
