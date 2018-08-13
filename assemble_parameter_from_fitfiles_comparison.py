@@ -10,15 +10,15 @@ p = {}
 plt.close("all")
 
 assemble_pars_file = True
-
-save_folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters vs Number of Repeats\\"
-
-fig = plt.figure(figsize=(30, 18))  # 4 graphs
-# fig = plt.figure(figsize=(15, 9))  # 1 graph
 plt.rcParams.update({'font.size': 35})  # legend + title size
 plt.rc('axes', linewidth=3)
 plt.rc('xtick', labelsize=35)
 plt.rc('ytick', labelsize=35)
+save_folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Parameters vs Number of Repeats\\"
+
+fig = plt.figure(figsize=(30, 18))  # 4 graphs
+# fig = plt.figure(figsize=(15, 9))  # 1 graph
+
 
 
 # folder 1
