@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 datafile = "assembled_pars.dat"
-folder = "C:\\Users\\brouw\\Desktop\\Analysis\\"
+folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Analysis\\"
 df = pd.read_csv(folder + datafile, sep='\t')
 
 plt.rcParams.update({'font.size': 20})  # legend + title size
@@ -45,8 +45,8 @@ plt.xticks(int_keys, sub_keys, rotation=45)
 plt.title("Stiffness (pN/nm)", fontsize=20)
 plt.xlabel("Nucleosome Repeat Length")
 plt.ylabel("Stiffness (kN/nm)")
+plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
 plt.savefig(folder+"stiffness_boxplot",dpi=600)
-plt.tick_params(direction='in', top=True, right=True)
 
 plt.figure(1)
 plt.boxplot(boxplot_G1, showfliers=False, positions=int_keys)
@@ -54,8 +54,8 @@ plt.xticks(int_keys, sub_keys, rotation=45)
 plt.title("Stacking Energy (kT)", fontsize=20)
 plt.xlabel("Nucleosome Repeat Length")
 plt.ylabel("G1 (kT)")
+plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
 plt.savefig(folder+"G1_boxplot",dpi=600)
-plt.tick_params(direction='in', top=True, right=True)
 
 plt.figure(2)
 plt.boxplot(boxplot_G2, showfliers=False, positions=int_keys)
@@ -63,8 +63,8 @@ plt.xticks(int_keys, sub_keys, rotation=45)
 plt.title("Partial Unwrapping Energy (kT)", fontsize=20)
 plt.xlabel("Nucleosome Repeat Length")
 plt.ylabel("G2 (kT)")
+plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
 plt.savefig(folder+"G2_boxplot",dpi=600)
-plt.tick_params(direction='in', top=True, right=True)
 
 plt.close()
 

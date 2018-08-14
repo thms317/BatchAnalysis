@@ -9,7 +9,7 @@ assemble_pars_file = True
 analysis = False
 
 folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\"
-save_folder = "C:\\Users\\tbrouwer\\Desktop\\Chromatin Force Spectroscopy\\"
+save_folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Analysis\\"
 
 # fig = plt.figure(figsize=(30, 18))
 # plt.rcParams.update({'font.size': 20})
