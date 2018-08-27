@@ -31,8 +31,9 @@ for NRL in NRLs:
 f_val, p_val = stats.f_oneway(G2_arr[0],G2_arr[1],G2_arr[2],G2_arr[3],G2_arr[4],G2_arr[5],G2_arr[6],G2_arr[7],G2_arr[8],G2_arr[9],G2_arr[10])
 print("One-way ANOVA P =", p_val)
 
-# remove lowest number of measurements
-length.remove(min(length))
+# remove lowest number of measurements (or not)
+# length.remove(min(length))
+
 n_min = min(length)
 
 def bootstrap_resample(X, n):
