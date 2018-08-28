@@ -332,6 +332,94 @@ def read_fitfiles(fitfile_path, fitfile, pars, meas_pars):
     return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions
     # return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, time_pull, time_release, force, z, time
 
+def read_fitfiles_plain(fitfile_path, fitfile, standard_trajectory=False, evaluate_ruptures=False):
+
+    #  laptop or work PC
+    bool = os.path.isdir(fitfile_path)
+    if bool == False:
+        fitfile_path = fitfile_path.replace("tbrouwer", "brouw")
+
+    # open data
+    file_all = fitfile_path + fitfile
+
+    # read DataFrame
+    df = pd.read_csv(file_all, sep="\t")
+
+    time = np.array(df['t (s)'])
+    force = np.array(df['F (pN)'])
+    z = np.array(df['z (um)'])
+    z_fit = np.array(df['z fit (um)'])
+
+    # transitions
+    trans_number = int(df.columns[-1][3:])  # number of transitions
+    t1 = df.columns.get_loc("T1_0")  # locations
+    t2 = df.columns.get_loc("T2_0")
+    t3 = df.columns.get_loc("T3_0")
+    T1 = np.array(df.iloc[:, t1:1 + trans_number + t1])  # transitions
+    T2 = np.array(df.iloc[:, t2:1 + trans_number + t2])
+    T3 = np.array(df.iloc[:, t3:1 + trans_number + t3])
+
+    if evaluate_ruptures:
+
+        # calculating the mask
+        rupture, rupt_index, mask = filter_rupture_Z(time, force, z)
+
+        # applying the mask
+        time = time[mask == 1]
+        force = force[mask == 1]
+        z = z[mask == 1]
+        z_fit = z_fit[mask == 1]
+
+        T1 = T1[mask == 1]  # filter the transitions
+        T2 = T2[mask == 1]
+        T3 = T3[mask == 1]
+
+    # calculating the first derivative of force
+    dx = np.diff(time)
+    dy = np.diff(force)
+    diff_force = np.append([0], np.divide(dy, dx))  # add a zero as first element
+
+    # split in pull & release
+    factor = max(diff_force / 1000)
+
+    if standard_trajectory:
+
+        f_pull = force[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        f_release = force[np.where((diff_force < factor) & (time > 120))]
+        z_pull = z[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        z_release = z[np.where((diff_force < factor) & (time > 120))]
+        time_pull = time[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        time_release = time[np.where((diff_force < factor) & (time > 120))]
+        z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T1 = T1[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T2 = T2[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T3 = T3[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+
+        # f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        # z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        # time_pull = time[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # time_release = time[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        # z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # T1 = T1[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # T2 = T2[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        # T3 = T3[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+
+    else:
+        f_pull = force[np.where(diff_force > factor)]
+        f_release = force[np.where(diff_force < factor)]
+        z_pull = z[np.where(diff_force > factor)]
+        z_release = z[np.where(diff_force < factor)]
+        z_fit_pull = z_fit[np.where(diff_force > factor)]
+        T1 = T1[np.where(diff_force > factor)]
+        T2 = T2[np.where(diff_force > factor)]
+        T3 = T3[np.where(diff_force > factor)]
+
+    transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
+
+    return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions
+
 
 def filter_rupture(fitfile, meas_pars, test=False):
     m = meas_pars
@@ -391,6 +479,36 @@ def filter_rupture(fitfile, meas_pars, test=False):
         return rupt, mask, Z
     else:
         return rupt, mask
+
+def filter_rupture_Z(time, force, Z):
+
+    # calculating the first derivative of amplitude
+    dx = np.diff(time)
+    dy = np.diff(Z)
+    diff_z = np.append([0], np.divide(dy, dx))
+    diff_z -= np.mean(diff_z)
+
+    dx = np.diff(time)
+    dy = np.diff(diff_z)
+    diff2_z = abs(np.append([0], np.divide(dy, dx)))
+    diff2_z -= np.mean(diff_z)
+
+    rupture = False
+
+    for n, ddz in enumerate(diff2_z):
+        rupt_index = n
+        if ddz > 10 * np.median(diff2_z):
+            rupture = True
+            break
+
+    mask = np.ones(len(Z))
+
+    if rupture:
+        mask_on = np.ones(rupt_index)
+        fuck_it_mask_off = np.zeros(len(Z) - rupt_index)
+        mask = np.concatenate((mask_on, fuck_it_mask_off))
+
+    return rupture, rupt_index, mask
 
 
 def build_measurements(table_path, table_file, pars):
