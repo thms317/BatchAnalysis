@@ -5,11 +5,11 @@ import glob
 import numpy as np
 import matplotlib.cm as cm
 
-fitfile_path = "C:\\Users\\brouw\\Desktop\\NRL\\best\\167\\"
+fitfile_path = "N:\\Brouwer\\NRL\\assembly\\167\\"
 save_path = fitfile_path
 
-standard_trajectory = True
-evaluate_ruptures = True
+standard_trajectory = False
+evaluate_ruptures = False
 
 fitfiles = []
 os.chdir(fitfile_path)
@@ -25,12 +25,12 @@ for n, fitfile in enumerate(fitfiles):
 
     print("Processing fitfile... " + str(fitfile))
 
-    f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles_plain(fitfile_path, fitfile, standard_trajectory=standard_trajectory, evaluate_ruptures=evaluate_ruptures)
-    wlc = np.transpose(transitions[2])[-1]
-
     # read pars from logfile
     logfile = fitfile[:-3] + "log"
     fit_pars, fit_errors, table = ba.read_logfile(fitfile_path, logfile, p)
+
+    f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles_plain(fitfile_path, fitfile, p, standard_trajectory=standard_trajectory, evaluate_ruptures=evaluate_ruptures)
+    wlc = np.transpose(transitions[2])[-1]
 
     plt.rcParams.update({'font.size': 20})
     plt.rc('axes', linewidth=3)
@@ -48,7 +48,7 @@ for n, fitfile in enumerate(fitfiles):
         # plt.plot(np.transpose(transitions[1])[t],f_trans,'--',color='lightgrey')  # transition 2
         plt.plot(np.transpose(transitions[2])[t], f_pull, '--', color='lightgrey')  # transition 3
 
-    plt.scatter(z_pull, f_pull, color=next(colors), label=str(int(p['NRL'])), s=30, zorder=25, facecolors='none')
+    plt.scatter(z_pull, f_pull, color=next(colors), label=fitfile[:-4], s=30, zorder=25, facecolors='none')
     # plt.scatter(z_release, f_release, color='lightgrey', s=30, zorder=15, facecolors='none')
     plt.plot(wlc, f_pull, '--', color="black", zorder=100)
     plt.plot(z_fit_pull, f_pull, color='black', linewidth=3, zorder=1000)
@@ -57,6 +57,7 @@ for n, fitfile in enumerate(fitfiles):
         plt.plot(wlc, f_pull, '--', color="black", label="WLC", zorder=100)
         plt.plot(z_fit_pull, f_pull, color='black', linewidth=3, label="Stat. Mech. Model fit", zorder=1000)
 
+plt.title("NRL = "+str(int(p['NRL']))+" (assembly)")
 plt.legend(loc=2, frameon=False)
-plt.savefig(save_path + "assembly")
+plt.savefig(save_path + str(int(p['NRL']))+ " assembly")
 plt.close()

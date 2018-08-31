@@ -5,10 +5,7 @@ import glob
 import numpy as np
 import matplotlib.cm as cm
 
-fitfile_path = "C:\\Users\\brouw\\Desktop\\NRL\\167x16\\"
-fitfile_path = "C:\\Users\\brouw\\Desktop\\NRL\\168x16\\"
-fitfile_path = "C:\\Users\\brouw\\Desktop\\NRL\\176x16\\"
-fitfile_path = "C:\\Users\\brouw\\Desktop\\NRL\\177x16\\"
+fitfile_path = "N:\\Brouwer\\NRL\\171x16\\"
 save_path = fitfile_path + "figs\\"
 if not os.path.exists(save_path):
     os.makedirs(save_path)
@@ -24,7 +21,10 @@ for file in glob.glob("*.fit"):
 color = "darkgreen"
 color = "navy"
 color = "red"
-color = "orange"
+# color = "orange"
+# color = "teal"
+# color = "purple"
+
 
 for n, fitfile in enumerate(fitfiles):
 
@@ -34,12 +34,12 @@ for n, fitfile in enumerate(fitfiles):
 
     print("Processing fitfile... " + str(fitfile))
 
-    f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles_plain(fitfile_path, fitfile, standard_trajectory=standard_trajectory, evaluate_ruptures=evaluate_ruptures)
-    wlc = np.transpose(transitions[2])[-1]
-
     # read pars from logfile
     logfile = fitfile[:-3] + "log"
     fit_pars, fit_errors, table = ba.read_logfile(fitfile_path, logfile, p)
+
+    f_pull, f_release, z_pull, z_release, z_fit_pull, transitions = ba.read_fitfiles_plain(fitfile_path, fitfile, p, standard_trajectory=standard_trajectory, evaluate_ruptures=evaluate_ruptures)
+    wlc = np.transpose(transitions[2])[-1]
 
     plt.rcParams.update({'font.size': 20})
     plt.rc('axes', linewidth=3)

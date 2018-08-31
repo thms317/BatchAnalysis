@@ -332,7 +332,9 @@ def read_fitfiles(fitfile_path, fitfile, pars, meas_pars):
     return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions
     # return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions, time_pull, time_release, force, z, time
 
-def read_fitfiles_plain(fitfile_path, fitfile, standard_trajectory=False, evaluate_ruptures=False):
+def read_fitfiles_plain(fitfile_path, fitfile, pars, standard_trajectory=False, evaluate_ruptures=False):
+
+    p = pars
 
     #  laptop or work PC
     bool = os.path.isdir(fitfile_path)
@@ -382,6 +384,23 @@ def read_fitfiles_plain(fitfile_path, fitfile, standard_trajectory=False, evalua
     # split in pull & release
     factor = max(diff_force / 1000)
 
+    if p['NRL'] == 168 or p['NRL'] == 169:
+    # if p['NRL'] == 169:
+        f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        time_pull = time[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        time_release = time[np.where((diff_force < factor) & (time > 75) & (time < 125))]
+        z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        T1 = T1[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        T2 = T2[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+        T3 = T3[np.where((diff_force > factor) & (time > 50) & (time < 80))]
+
+        transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
+
+        return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions
+
     if standard_trajectory:
 
         f_pull = force[np.where((diff_force > factor) & (time > 90) & (time < 130))]
@@ -394,17 +413,6 @@ def read_fitfiles_plain(fitfile_path, fitfile, standard_trajectory=False, evalua
         T1 = T1[np.where((diff_force > factor) & (time > 90) & (time < 130))]
         T2 = T2[np.where((diff_force > factor) & (time > 90) & (time < 130))]
         T3 = T3[np.where((diff_force > factor) & (time > 90) & (time < 130))]
-
-        # f_pull = force[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        # f_release = force[np.where((diff_force < factor) & (time > 75) & (time < 125))]
-        # z_pull = z[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        # z_release = z[np.where((diff_force < factor) & (time > 75) & (time < 125))]
-        # time_pull = time[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        # time_release = time[np.where((diff_force < factor) & (time > 75) & (time < 125))]
-        # z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        # T1 = T1[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        # T2 = T2[np.where((diff_force > factor) & (time > 50) & (time < 80))]
-        # T3 = T3[np.where((diff_force > factor) & (time > 50) & (time < 80))]
 
     else:
         f_pull = force[np.where(diff_force > factor)]
