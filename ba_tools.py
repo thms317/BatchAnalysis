@@ -4,6 +4,7 @@ from scipy.optimize import curve_fit
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def read_analyze(measurement, pars):
@@ -350,6 +351,7 @@ def read_fitfiles_plain(fitfile_path, fitfile, pars, standard_trajectory=False, 
     time = np.array(df['t (s)'])
     force = np.array(df['F (pN)'])
     z = np.array(df['z (um)'])
+    # z = np.array(df['selected z (um)'])
     z_fit = np.array(df['z fit (um)'])
 
     # transitions
@@ -423,6 +425,86 @@ def read_fitfiles_plain(fitfile_path, fitfile, pars, standard_trajectory=False, 
         T1 = T1[np.where(diff_force > factor)]
         T2 = T2[np.where(diff_force > factor)]
         T3 = T3[np.where(diff_force > factor)]
+
+    transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
+
+    return f_pull, f_release, z_pull, z_release, z_fit_pull, transitions
+
+def read_fitfiles_assembly(fitfile_path, fitfile, pars, standard_trajectory=False, evaluate_ruptures=False):
+
+    p = pars
+
+    #  laptop or work PC
+    bool = os.path.isdir(fitfile_path)
+    if bool == False:
+        fitfile_path = fitfile_path.replace("tbrouwer", "brouw")
+
+    # open data
+    file_all = fitfile_path + fitfile
+
+    # read DataFrame
+    df = pd.read_csv(file_all, sep="\t")
+
+    time = np.array(df['t (s)'])
+    force = np.array(df['F (pN)'])
+    # z = np.array(df['z (um)'])
+    z = np.array(df['selected z (um)'])
+    z_fit = np.array(df['z fit (um)'])
+
+    # transitions
+    trans_number = int(df.columns[-1][3:])  # number of transitions
+    t1 = df.columns.get_loc("T1_0")  # locations
+    t2 = df.columns.get_loc("T2_0")
+    t3 = df.columns.get_loc("T3_0")
+    T1 = np.array(df.iloc[:, t1:1 + trans_number + t1])  # transitions
+    T2 = np.array(df.iloc[:, t2:1 + trans_number + t2])
+    T3 = np.array(df.iloc[:, t3:1 + trans_number + t3])
+
+    if evaluate_ruptures:
+
+        # calculating the mask
+        rupture, rupt_index, mask = filter_rupture_Z(time, force, z)
+
+        # applying the mask
+        time = time[mask == 1]
+        force = force[mask == 1]
+        z = z[mask == 1]
+        z_fit = z_fit[mask == 1]
+
+        T1 = T1[mask == 1]  # filter the transitions
+        T2 = T2[mask == 1]
+        T3 = T3[mask == 1]
+
+    # calculating the first derivative of force
+    dx = np.diff(time)
+    dy = np.diff(force)
+    diff_force = np.append([0], np.divide(dy, dx))  # add a zero as first element
+
+    # split in pull & release
+    factor = max(diff_force / 1000)
+
+    if standard_trajectory:
+
+        f_pull = force[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        f_release = force[np.where((diff_force < factor) & (time > 120))]
+        z_pull = z[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        z_release = z[np.where((diff_force < factor) & (time > 120))]
+        time_pull = time[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        time_release = time[np.where((diff_force < factor) & (time > 120))]
+        z_fit_pull = z_fit[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T1 = T1[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T2 = T2[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+        T3 = T3[np.where((diff_force > factor) & (time > 90) & (time < 130))]
+
+    else:
+        f_pull = force[np.where(z != np.nan)]
+        f_release = force[np.where(z != np.nan)]
+        z_pull = z[np.where(z != np.nan)]
+        z_release = z[np.where(z != np.nan)]
+        z_fit_pull = z_fit[np.where(z != np.nan)]
+        T1 = T1[np.where(z != np.nan)]
+        T2 = T2[np.where(z != np.nan)]
+        T3 = T3[np.where(z != np.nan)]
 
     transitions = np.stack((T1, T2, T3))  # all transitions in a 3D array
 

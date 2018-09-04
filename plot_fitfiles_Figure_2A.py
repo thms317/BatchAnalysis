@@ -60,7 +60,7 @@ for n, fitfile in enumerate(fitfiles):
     plt.tick_params(direction='in', top=True, right=True)
 
     plt.ylim(0, 10)
-    plt.xlim(0.25,1.25)
+    plt.xlim(0.45,1.25)
 
     if p['NRL'] == 167:
         plt.scatter(z_pull, f_pull, color='red', label=str(int(p['NRL'])), s=30, zorder=25,
@@ -93,5 +93,5 @@ for n, fitfile in enumerate(fitfiles):
 
 plt.title("NRL combination")
 plt.legend(loc=2, frameon=False)
-plt.savefig(save_path + "combination")
+# plt.savefig(save_path + "combination")
 plt.show()

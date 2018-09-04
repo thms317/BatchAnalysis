@@ -38,7 +38,7 @@ for n, fitfile in enumerate(fitfiles):
 
     # offset all curves to z[f=10]
     for n1,z in enumerate(z_fit_pull):
-        if f_pull[n1] > 11:
+        if f_pull[n1] > 10:
             offset = -(z - 1.2)
             break
 
@@ -60,7 +60,7 @@ for n, fitfile in enumerate(fitfiles):
     plt.tick_params(direction='in', top=True, right=True)
 
     plt.ylim(0, 10)
-    plt.xlim(0.25,1.25)
+    plt.xlim(0.45,1.25)
 
     if p['NRL'] == 175:
         plt.scatter(z_pull, f_pull, color='navy', label=str(int(p['NRL'])), s=30, zorder=25,
@@ -72,7 +72,7 @@ for n, fitfile in enumerate(fitfiles):
         plt.scatter(z_pull, f_pull, color='red', label=str(int(p['NRL'])), s=30, zorder=25,
                     facecolors='none')
 
-        plt.plot(z_fit_pull, f_pull, color='black', linewidth=3, zorder=1000)
+        # plt.plot(z_fit_pull, f_pull, color='black', linewidth=3, zorder=1000)
     # plt.plot(wlc, f_pull, '--', color="black", zorder=100)
     plt.plot(z_fit_pull, f_pull, color='black', linewidth=3, zorder=1000)
 
