@@ -5,8 +5,8 @@ import glob
 import numpy as np
 import matplotlib.cm as cm
 
-fitfile_path = "N:\\Brouwer\\NRL\\assembly\\167\\"
-save_path = fitfile_path
+fitfile_path = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\194x16\\"
+save_path = "C:\\Users\\tbrouwer\\Desktop\\192-193-194\\194\\"
 
 standard_trajectory = False
 evaluate_ruptures = False

@@ -10,14 +10,14 @@ plt.close("all")
 
 assemble_pars_file = False
 
-save_folder = "C:\\Users\\tbrouwer\\Desktop\\"
+save_folder = "C:\\Users\\tbrouwer\\Desktop\\192-193-194\\"
 
 fig = plt.figure(figsize=(30, 18))
 plt.rcParams.update({'font.size': 20})
 plt.rc('axes', linewidth=3)
 
-folder = "C:\\Users\\brouw\\Desktop\\Data\\"
-p['NRL_str'] = "167x15"
+folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\192x16\\"
+p['NRL_str'] = "192x16"
 
 fitfiles = []
 os.chdir(folder)

@@ -5,8 +5,12 @@ import glob
 import numpy as np
 import matplotlib.cm as cm
 
-fitfile_path = "N:\\Brouwer\\NRL\\171x16\\"
-save_path = fitfile_path + "figs\\"
+# fitfile_path = "N:\\Brouwer\\NRL\\171x16\\"
+# save_path = fitfile_path + "figs\\"
+
+fitfile_path = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\192x16\\"
+save_path = "C:\\Users\\tbrouwer\\Desktop\\192-193-194\\192\\"
+
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
