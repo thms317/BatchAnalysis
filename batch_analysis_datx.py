@@ -28,8 +28,8 @@ p = default_pars()
 
 plt.close("all")
 
-table_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\180924\\"
-table_file = "180924_195"
+table_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\181009\\"
+table_file = "181009_195"
 
 measurements = ba.build_measurements(table_path, table_file + ".datx", p)
 drift_arr = []

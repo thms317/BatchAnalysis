@@ -94,18 +94,23 @@ def read_analyze(measurement, pars):
     z_release = Z[diff_magnet > factor]
 
     # select high-force data
-    select_f = f_pull[np.where((f_pull > 40) & (f_pull < 50) & (time_pull > 60) & (time_pull < 140))]
-    select_z = z_pull[np.where((f_pull > 40) & (f_pull < 50) & (time_pull > 60) & (time_pull < 140))]
+    select_f = f_pull[np.where((f_pull > 50) & (f_pull < 55) & (time_pull > 60) & (time_pull < 140))]
+    select_z = z_pull[np.where((f_pull > 50) & (f_pull < 55) & (time_pull > 60) & (time_pull < 140))]
 
-    # fit the WLC in fashion (x,y) - only fit offset, fix everything else
-    popt, pcov = curve_fit(lambda f, z0: func.WLC_fit(f, P_nm, L_bp * 0.34, S_pN, z0), select_f, select_z, p0=1)
+    if select_f.size != 0:
 
-    z_fit = popt[0]
+        # fit the WLC in fashion (x,y) - only fit offset, fix everything else
+        popt, pcov = curve_fit(lambda f, z0: func.WLC_fit(f, P_nm, L_bp * 0.34, S_pN, z0), select_f, select_z, p0=1)
 
-    # subtract fitted offset from data
-    z_pull -= z_fit
-    z_release -= z_fit
-    select_z -= z_fit
+        z_fit = popt[0]
+
+        # subtract fitted offset from data
+        z_pull -= z_fit
+        z_release -= z_fit
+        select_z -= z_fit
+
+    else:
+        z_fit = 0
 
     title = str(title) + '_' + str(measurement[1]) + '_' + str(measurement[2]) + '_' + str(measurement[3])
 
@@ -833,15 +838,16 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     ax1.set_ylim(0,25)
 
     # stiffness
+
     ax2 = fig.add_subplot(2, 2, 3)
 
     ax2.set_ylabel('count')
     ax2.set_xlabel('k (pN/nm)')
     ax2.tick_params(direction='in', top=True, right=True)
     ax2.set_title("Fiber Stiffness")
-    binwidth = 0.1  # pN/nm
+    binwidth = 0.05  # pN/nm
     ax2.hist(ass_fit_pars[2], bins=np.arange(min(ass_fit_pars[2]), max(ass_fit_pars[2]) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
-    ax2.set_xlim(0,3)
+    ax2.set_xlim(0,1)
     ax2.set_ylim(0,25)
 
     # Stacking Energy G1
@@ -887,7 +893,7 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
 
     return
 
-def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True, color='grey', zorder=0):
+def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True, color='grey', zorder=0, ymax=30):
 
     ass_fit_pars = np.transpose(np.array(ass_fit_pars))
 
@@ -909,9 +915,9 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     ax1.legend(loc=1, frameon=False)
     ax1.set_xlim(0,40)
     # ax1.set_ylim(-0.1,25)
-    ax1.set_ylim(-0.1, 20)
+    ax1.set_ylim(-0.1, ymax)
     # ax1.yaxis.set_ticks(np.arange(0, 30, 5))
-    ax1.yaxis.set_ticks(np.arange(0, 25, 5))
+    ax1.yaxis.set_ticks(np.arange(0, 35, 5))
 
     # stiffness
     ax2 = fig.add_subplot(2, 2, 3)
@@ -920,19 +926,19 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     ax2.set_xlabel('Fiber stiffness (pN/nm)')
     ax2.tick_params(direction='in', length=6, width=3, top=True, right=True)
     # ax2.set_title("Fiber Stiffness")
-    binwidth = 0.15  # pN/nm - 167
-    # binwidth = 0.05  # pN/nm - 197
+    # binwidth = 0.15  # pN/nm - 167
+    binwidth = 0.05  # pN/nm - 197
     # ax2.hist(ass_fit_pars[2], bins=np.arange(min(ass_fit_pars[2]), max(ass_fit_pars[2]) + binwidth, binwidth), edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
     ax2.hist(ass_fit_pars[2], bins=np.arange(0,3,binwidth),
              edgecolor='black', linewidth=1.2, color=color, label=p['NRL_str'], zorder=zorder, alpha=0.5)
 
     ax2.legend(loc=1, frameon=False)
     # ax2.set_xlim(-0.03, 1)
-    ax2.set_xlim(-0.03, 3)
+    ax2.set_xlim(-0.03, 1.03)
     # ax2.set_ylim(-0.1,25)
-    ax2.set_ylim(-0.1,20)
+    ax2.set_ylim(-0.1,ymax)
     # ax2.yaxis.set_ticks(np.arange(0, 30, 5))
-    ax2.yaxis.set_ticks(np.arange(0, 25, 5))
+    ax2.yaxis.set_ticks(np.arange(0, 35, 5))
 
     # Stacking Energy G1
 
@@ -951,9 +957,9 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     # ax3.set_xlim(-0.1,30)
     ax3.set_xlim(-0.1, 35)
     # ax3.set_ylim(-0.1,25)
-    ax3.set_ylim(-0.1, 20)
+    ax3.set_ylim(-0.1, ymax)
     # ax3.yaxis.set_ticks(np.arange(0, 30, 5))
-    ax3.yaxis.set_ticks(np.arange(0, 25, 5))
+    ax3.yaxis.set_ticks(np.arange(0, 35, 5))
 
     # G2
     ax4 = fig.add_subplot(2, 2, 4)
@@ -969,9 +975,9 @@ def plot_combined_hist(fig, ass_fit_pars, ass_fit_errors, new_path, p, show_plot
     # ax4.set_xlim(-0.1,30)
     ax4.set_xlim(-0.1, 35)
     # ax4.set_ylim(-0.1,25)
-    ax4.set_ylim(-0.1,20)
+    ax4.set_ylim(-0.1,ymax)
     # ax4.yaxis.set_ticks(np.arange(0, 30, 5))
-    ax4.yaxis.set_ticks(np.arange(0, 25, 5))
+    ax4.yaxis.set_ticks(np.arange(0, 35, 5))
 
     return
 
