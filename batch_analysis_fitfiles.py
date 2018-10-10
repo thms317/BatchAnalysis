@@ -9,11 +9,11 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 5169-16  # number of base pairs
+    pars['L_bp'] = 5169  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = 194  # nucleosome repeat length
+    pars['NRL'] = 195  # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
     pars['type'] = "human"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
@@ -25,7 +25,6 @@ def default_pars():
 
 p = default_pars()
 
-# fitfile_path = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\171x16\\"
 fitfile_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
 
 plot_rot = True
