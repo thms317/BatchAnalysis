@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def read_analyze(measurement, pars):
+def read_analyze(measurement, pars, data_path):
     try:
         p = pars
     except:
@@ -21,14 +21,8 @@ def read_analyze(measurement, pars):
     S_pN = p['S_pN']  # stretch modulus (pN)
     P_nm = p['P_nm']  # persistence length (nm)
 
-    #  laptop or work PC
-    folder = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
-    bool = os.path.isdir(folder)
-    if bool == False:
-        folder = "C:\\Users\\brouw\\Desktop\\Data\\"
-
     # open data
-    file_location = folder + str(measurement[0]) + "\\"
+    file_location = data_path
     file_name = "data_" + str(measurement[1])
     file_extension = ".dat"
     file_all = file_location + file_name + file_extension
@@ -64,7 +58,10 @@ def read_analyze(measurement, pars):
     drift = []
     for i in range(beads):
         z_drift = np.array(df['Z' + str(i) + ' (um)'])
-        amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
+        try:
+            amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
+        except:
+            amplitude_drift = np.array(df['Amp a.u.'])
 
         # does the tether rupture?
         rupt, _ = func.rupture(time, amplitude_drift)
@@ -117,7 +114,7 @@ def read_analyze(measurement, pars):
     return f_pull, z_pull, f_release, z_release, title, drift_med, z_fit
 
 
-def read_analyze_rot(measurement, pars):
+def read_analyze_rot(measurement, pars, data_path):
     try:
         p = pars
     except:
@@ -129,14 +126,8 @@ def read_analyze_rot(measurement, pars):
     S_pN = p['S_pN']  # stretch modulus (pN)
     P_nm = p['P_nm']  # persistence length (nm)
 
-    #  laptop or work PC
-    folder = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
-    bool = os.path.isdir(folder)
-    if bool == False:
-        folder = "C:\\Users\\brouw\\Desktop\\Data\\"
-
-    # open data
-    file_location = folder + str(measurement[0]) + "\\"
+        # open data
+    file_location = data_path
     file_name = "data_" + str("{0:0=3d}".format(int(measurement[1]) - 1))
     file_extension = ".dat"
     file_all = file_location + file_name + file_extension
@@ -171,7 +162,10 @@ def read_analyze_rot(measurement, pars):
     drift = []
     for i in range(beads):
         z_drift = np.array(df['Z' + str(i) + ' (um)'])
-        amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
+        try:
+            amplitude_drift = np.array(df['Amp' + str(i) + ' (a.u.)'])
+        except:
+            amplitude_drift = np.array(df['Amp a.u.'])
 
         # does the tether rupture?
         rupt, _ = func.rupture(time, amplitude_drift)
@@ -606,7 +600,7 @@ def filter_rupture_Z(time, force, Z):
     return rupture, rupt_index, mask
 
 
-def build_measurements(table_path, table_file, pars):
+def build_measurements(folder, datx, pars):
     try:
         p = pars
     except:
@@ -614,7 +608,7 @@ def build_measurements(table_path, table_file, pars):
         return
 
     # read DataFrame
-    df = pd.read_csv(table_path + table_file, sep="\t")
+    df = pd.read_csv(folder + datx, sep="\t")
 
     selected = np.array(df['Selected'])
 
@@ -622,7 +616,7 @@ def build_measurements(table_path, table_file, pars):
     bead = np.array(df['Trace'])[np.where(selected == 1)]
     date, type = [], []
     for n in range(len(bead)):
-        date.append(table_file[:6])
+        date.append(datx[:6])
         type.append(p['NRL_str'])
 
     measurements = []

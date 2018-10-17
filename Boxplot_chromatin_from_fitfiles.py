@@ -4,7 +4,8 @@ import numpy as np
 import ba_tools as ba
 
 folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\"
-savefolder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative Boxplots\\"
+# savefolder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative Boxplots\\"
+savefolder = "C:\\Users\\brouw\\Desktop\\"
 save = True
 
 # actual NRLs
@@ -20,6 +21,8 @@ plt.rc('xtick', labelsize=15)
 plt.rc('ytick', labelsize=15)
 
 boxplot_k, boxplot_G1, boxplot_G2, int_keys, sub_keys = [], [], [], [], []
+
+total = 0
 
 for n, NRL in enumerate(NRLs):
 
@@ -44,6 +47,9 @@ for n, NRL in enumerate(NRLs):
             stiffness.append(fit_pars[2])
             G1.append(fit_pars[3])
             G2.append(fit_pars[4])
+
+            total += 1
+
         except:
             pass
 
@@ -99,5 +105,8 @@ plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
 if save:
     plt.savefig(savefolder+"G2_boxplot",dpi=600)
 
+print("Total number of measurements... " + str(total))
+
+plt.show()
 plt.close()
 

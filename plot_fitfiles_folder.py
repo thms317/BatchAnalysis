@@ -6,9 +6,10 @@ import numpy as np
 import matplotlib.cm as cm
 
 fitfile_path = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\194x16\\"
-save_path = "C:\\Users\\tbrouwer\\Desktop\\192-193-194\\194\\"
+fitfile_path = "C:\\Users\\brouw\\Desktop\\"
+save_path = "C:\\Users\\brouw\\Desktop\\"
 
-standard_trajectory = False
+standard_trajectory = True
 evaluate_ruptures = False
 
 fitfiles = []
@@ -17,7 +18,7 @@ for file in glob.glob("*.fit"):
     fitfiles.append(file)
 
 colors = iter(cm.rainbow(np.linspace(0, 1, len(fitfiles))))
-plt.figure(figsize=(30, 20))
+plt.figure(figsize=(15, 10))
 
 for n, fitfile in enumerate(fitfiles):
 

@@ -17,7 +17,7 @@ for file in glob.glob("*.fit"):
     fitfiles.append(file)
 
 colors = iter(cm.rainbow(np.linspace(0, 1, len(fitfiles))))
-plt.figure(figsize=(30, 20))
+plt.figure(figsize=(20, 20))
 
 for n, fitfile in enumerate(fitfiles):
 
@@ -93,5 +93,5 @@ for n, fitfile in enumerate(fitfiles):
 
 plt.title("NRL combination")
 plt.legend(loc=2, frameon=False)
-# plt.savefig(save_path + "combination")
+plt.savefig(save_path + "combination")
 plt.show()
