@@ -9,11 +9,11 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 5169+32  # number of base pairs
+    pars['L_bp'] = 5169  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = 197  # nucleosome repeat length
+    pars['NRL'] = 195  # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
     pars['type'] = "human"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
@@ -28,24 +28,24 @@ p = default_pars()
 
 plt.close("all")
 
-table_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\181016\\"
-table_file = "181016_197"
+data_path = "C:\\Users\\brouw\\Desktop\\testdata\\181011\\"
+datx_file = "181011_195"
 
-measurements = ba.build_measurements(table_path, table_file + ".datx", p)
+measurements = ba.build_measurements(data_path, datx_file + ".datx", p)
 drift_arr = []
 z_offset_arr = []
 print("n = "+str(len(measurements)))
 
 for measurement in measurements:
     print("Processing measurement... " + str(measurement))
-    f_pull, z_pull, f_release, z_release, title, drift, z_offset = ba.read_analyze(measurement, p)
+    f_pull, z_pull, f_release, z_release, title, drift, z_offset = ba.read_analyze(measurement, p, data_path)
     f_wlc = np.logspace(np.log10(0.15), np.log10(int(np.max(f_pull))), 1000)
     wlc, _ = func.WLC(f_wlc, L_bp=p['L_bp'], P_nm=p['P_nm'], S_pN=p['S_pN'])
     drift_FE = p['drift']
     drift_arr.append(drift)
     z_offset_arr.append(z_offset)
 
-    twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg = ba.read_analyze_rot(measurement, p)
+    twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg = ba.read_analyze_rot(measurement, p, data_path)
     drift_rot = p['drift']
 
     fig = plt.figure(figsize=(15, 5))
@@ -93,7 +93,7 @@ for measurement in measurements:
     fig.suptitle(title)
 
     if p['save'] == True:
-        new_path = table_path + "\\Selected figures" + table_file[6:] + "\\"
+        new_path = data_path + "\\Selected figures" + datx_file[6:] + "\\"
         if not os.path.exists(new_path):
             os.makedirs(new_path)
         fig.savefig(new_path + title)
@@ -111,6 +111,6 @@ if p['save'] == True:
     headers = ["date", "data_", "bead", "type", "length (bp)", "NRL", "repeats", "z-offset", "drift"]
 
     measurements = np.append(headers,measurements).reshape((-1, 9))
-    with open(new_path + table_file + "_list_of_measurements.txt", "w+") as my_csv:
+    with open(new_path + datx_file + "_list_of_measurements.txt", "w+") as my_csv:
         csvWriter = csv.writer(my_csv, delimiter='\t')
         csvWriter.writerows(measurements)
