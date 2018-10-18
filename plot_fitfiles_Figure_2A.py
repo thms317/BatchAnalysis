@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.cm as cm
 
 fitfile_path = "N:\\Brouwer\\NRL\\best\\combination\\figure_2A\\"
-save_path = fitfile_path
+save_path = "C:\\Users\\tbrouwer\\Desktop\\"
 
 standard_trajectory = True
 evaluate_ruptures = False
@@ -17,7 +17,7 @@ for file in glob.glob("*.fit"):
     fitfiles.append(file)
 
 colors = iter(cm.rainbow(np.linspace(0, 1, len(fitfiles))))
-plt.figure(figsize=(30, 20))
+plt.figure(figsize=(15, 10))
 
 for n, fitfile in enumerate(fitfiles):
 
@@ -93,5 +93,6 @@ for n, fitfile in enumerate(fitfiles):
 
 plt.title("NRL combination")
 plt.legend(loc=2, frameon=False)
-# plt.savefig(save_path + "combination")
-plt.show()
+plt.savefig(save_path + "combination")
+# plt.show()
+plt.close()
