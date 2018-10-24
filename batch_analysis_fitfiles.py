@@ -26,6 +26,7 @@ def default_pars():
 p = default_pars()
 
 fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
+data_path = "C:\\Users\\brouw\\Desktop\\Data\\181016\\"
 
 plot_rot = True
 
@@ -118,7 +119,7 @@ for fitfile in fitfiles:
 
     if plot_rot:
         measurement = [fitfile[:6],fitfile[12:15],fitfile[16:-4],p['NRL_str']]
-        twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg = ba.read_analyze_rot(measurement, p)
+        twist_pos, twist_neg, z_pos, z_neg, lnd_pos, lnd_neg = ba.read_analyze_rot(measurement, p, data_path)
         drift_rot = p['drift']
         p['radius_um'] = m['radius_um']
 
