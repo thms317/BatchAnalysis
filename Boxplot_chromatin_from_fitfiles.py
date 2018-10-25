@@ -6,14 +6,16 @@ import ba_tools as ba
 folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\"
 # savefolder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative Boxplots\\"
 savefolder = "C:\\Users\\brouw\\Desktop\\"
+
 save = True
+depict_n = True
 
 # actual NRLs
 NRLs = list(range(167, 177+1))
-NRLs.extend(range(193, 195+1))
+NRLs.extend(range(192, 197+1))
 # NRL locations (for plotting)
 NRLs_loc = list(range(167, 177+1))
-NRLs_loc.extend(range(179, 182+1))
+NRLs_loc.extend(range(179, 184+1))
 
 plt.rcParams.update({'font.size': 20})  # legend + title size
 plt.rc('axes', linewidth=3)
@@ -78,6 +80,10 @@ plt.xticks(int_keys, sub_keys, rotation=0)
 plt.xlabel("Nucleosome Repeat Length (bp)")
 plt.ylabel("Stiffness (kN/nm)")
 plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
+ymin, ymax = plt.ylim()
+if depict_n:
+    for n, loc in enumerate(NRLs_loc):
+        plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
     plt.savefig(savefolder+"stiffness_boxplot",dpi=600)
 plt.semilogy()
@@ -92,6 +98,10 @@ plt.xticks(int_keys, sub_keys, rotation=0)
 plt.xlabel("Nucleosome Repeat Length (bp)")
 plt.ylabel("Stacking Energy (kT)")
 plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
+if depict_n:
+    ymin, ymax = plt.ylim()
+    for n, loc in enumerate(NRLs_loc):
+        plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
     plt.savefig(savefolder+"G1_boxplot",dpi=600)
 
@@ -102,10 +112,17 @@ plt.xticks(int_keys, sub_keys, rotation=0)
 plt.xlabel("Nucleosome Repeat Length (bp)")
 plt.ylabel("Partial Unwrapping Energy (kT)")
 plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
+if depict_n:
+    ymin, ymax = plt.ylim()
+    for n, loc in enumerate(NRLs_loc):
+        plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
     plt.savefig(savefolder+"G2_boxplot",dpi=600)
 
+
 print("Total number of measurements... " + str(total))
+
+
 
 plt.show()
 plt.close()
