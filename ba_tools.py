@@ -839,9 +839,11 @@ def plot_hist(ass_fit_pars, ass_fit_errors, new_path, p, show_plot = True):
     ax2.set_xlabel('k (pN/nm)')
     ax2.tick_params(direction='in', top=True, right=True)
     ax2.set_title("Fiber Stiffness")
-    binwidth = 0.05  # pN/nm
+    # binwidth = 0.05  # pN/nm - one start
+    binwidth = 0.1  # pN/nm - two start
     ax2.hist(ass_fit_pars[2], bins=np.arange(min(ass_fit_pars[2]), max(ass_fit_pars[2]) + binwidth, binwidth), edgecolor='black', linewidth=1.2)
-    ax2.set_xlim(0,1)
+    # ax2.set_xlim(0, 1)  # one start
+    ax2.set_xlim(0, 3)  # two start
     ax2.set_ylim(0,25)
 
     # Stacking Energy G1

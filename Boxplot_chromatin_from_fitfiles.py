@@ -5,17 +5,17 @@ import ba_tools as ba
 
 folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\"
 # savefolder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative Boxplots\\"
-savefolder = "C:\\Users\\brouw\\Desktop\\"
+savefolder = "C:\\Users\\tbrouwer\\Desktop\\"
 
 save = True
 depict_n = True
 
 # actual NRLs
 NRLs = list(range(167, 177+1))
-NRLs.extend(range(192, 197+1))
+NRLs.extend(range(192, 202+1))
 # NRL locations (for plotting)
 NRLs_loc = list(range(167, 177+1))
-NRLs_loc.extend(range(179, 184+1))
+NRLs_loc.extend(range(179, 189+1))
 
 plt.rcParams.update({'font.size': 20})  # legend + title size
 plt.rc('axes', linewidth=3)
@@ -96,7 +96,7 @@ plt.boxplot(boxplot_G1, showfliers=False, positions=int_keys)
 plt.xticks(int_keys, sub_keys, rotation=0)
 # plt.title("Stacking Energy (kT)", fontsize=20)
 plt.xlabel("Nucleosome Repeat Length (bp)")
-plt.ylabel("Stacking Energy (kT)")
+plt.ylabel("$\Delta G_{1}$ (kT)")
 plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
 if depict_n:
     ymin, ymax = plt.ylim()
@@ -110,7 +110,7 @@ plt.boxplot(boxplot_G2, showfliers=False, positions=int_keys)
 plt.xticks(int_keys, sub_keys, rotation=0)
 # plt.title("Partial Unwrapping Energy (kT)", fontsize=20)
 plt.xlabel("Nucleosome Repeat Length (bp)")
-plt.ylabel("Partial Unwrapping Energy (kT)")
+plt.ylabel("$\Delta G_{2}$ (kT)")
 plt.tick_params(direction='in', top=True, right=True, length=6, width=3)
 if depict_n:
     ymin, ymax = plt.ylim()
