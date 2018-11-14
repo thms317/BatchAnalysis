@@ -9,13 +9,13 @@ def default_pars():
     pars = {}
     pars['kT'] = 4.114  # pN nm
     pars['L0'] = 0.34  # nm / base pair
-    pars['L_bp'] = 5265  # number of base pairs
+    pars['L_bp'] = 4721  # number of base pairs
     pars['P_nm'] = 50  # persistence length
     pars['S_pN'] = 1000  # stretch modulus
     pars['z0_nm'] = 0  # offset in nm / subunit
-    pars['NRL'] = 201  # nucleosome repeat length
+    pars['NRL'] = 167  # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
-    pars['type'] = "human"  # type of histone
+    pars['type'] = "Xenopus_tailless"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
@@ -28,12 +28,13 @@ p = default_pars()
 
 plt.close("all")
 
-data_path = "C:\\Users\\brouw\\Desktop\\Data\\181113\\"
-datx_file = "181113_201"
+data_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\181113\\"
+datx_file = "181113_167_tailless"
 
 measurements = ba.build_measurements(data_path, datx_file + ".datx", p)
 drift_arr = []
 z_offset_arr = []
+print("n = "+str(len(measurements)))
 
 for measurement in measurements:
     print("Processing measurement... " + str(measurement))
