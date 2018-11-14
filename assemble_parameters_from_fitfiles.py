@@ -17,9 +17,9 @@ plt.rcParams.update({'font.size': 20})
 plt.rc('axes', linewidth=3)
 
 # overhead
-fitfile_folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\204x16\\"
+fitfile_folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\197x16\\"
 save_folder = "C:\\Users\\tbrouwer\\Desktop\\"
-NRL_string = "167x16_WT"
+NRL_string = "197x16"
 
 
 fitfiles = []
