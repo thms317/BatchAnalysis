@@ -11,11 +11,9 @@ save = True
 depict_n = True
 
 # actual NRLs
-NRLs = list(range(167, 177+1))
-# NRLs.extend(range(192, 202+1))
+NRLs = list(range(192, 202+1))
 # NRL locations (for plotting)
-NRLs_loc = list(range(167, 177+1))
-# NRLs_loc.extend(range(179, 189+1))
+NRLs_loc = list(range(192, 202+1))
 
 plt.rcParams.update({'font.size': 20})  # legend + title size
 plt.rc('axes', linewidth=3)
@@ -85,11 +83,11 @@ if depict_n:
     for n, loc in enumerate(NRLs_loc):
         plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
-    plt.savefig(savefolder+"low_NRL_stiffness_boxplot",dpi=600)
+    plt.savefig(savefolder+"high_NRL_stiffness_boxplot",dpi=600)
 plt.semilogy()
 plt.ylim(0.1,10)
 if save:
-    plt.savefig(savefolder+"low_NRL_stiffness_boxplot_log",dpi=600)
+    plt.savefig(savefolder+"high_NRL_stiffness_boxplot_log",dpi=600)
 
 plt.figure(1)
 plt.boxplot(boxplot_G1, showfliers=False, positions=int_keys)
@@ -103,7 +101,7 @@ if depict_n:
     for n, loc in enumerate(NRLs_loc):
         plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
-    plt.savefig(savefolder+"low_NRL_G1_boxplot",dpi=600)
+    plt.savefig(savefolder+"high_NRL_G1_boxplot",dpi=600)
 
 plt.figure(2)
 plt.boxplot(boxplot_G2, showfliers=False, positions=int_keys)
@@ -117,7 +115,7 @@ if depict_n:
     for n, loc in enumerate(NRLs_loc):
         plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
-    plt.savefig(savefolder+"low_NRL_G2_boxplot",dpi=600)
+    plt.savefig(savefolder+"high_NRL_G2_boxplot",dpi=600)
 
 
 print("Total number of measurements... " + str(total))

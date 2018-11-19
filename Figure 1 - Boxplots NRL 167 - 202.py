@@ -5,7 +5,7 @@ import ba_tools as ba
 
 folder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative\\"
 # savefolder = "S:\\Brouwer\\Chromatin Force Spectroscopy\\Cummulative Boxplots\\"
-savefolder = "C:\\Users\\tbrouwer\\Desktop\\"
+savefolder = "C:\\Users\\brouw\\Desktop\\NRL analysis\\"
 
 save = True
 depict_n = True
@@ -85,11 +85,11 @@ if depict_n:
     for n, loc in enumerate(NRLs_loc):
         plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
-    plt.savefig(savefolder+"stiffness_boxplot",dpi=600)
+    plt.savefig(savefolder+"all_NRL_stiffness_boxplot",dpi=600)
 plt.semilogy()
 plt.ylim(0.1,10)
 if save:
-    plt.savefig(savefolder+"stiffness_boxplot_log",dpi=600)
+    plt.savefig(savefolder+"all_NRL_stiffness_boxplot_log",dpi=600)
 
 plt.figure(1)
 plt.boxplot(boxplot_G1, showfliers=False, positions=int_keys)
@@ -103,7 +103,7 @@ if depict_n:
     for n, loc in enumerate(NRLs_loc):
         plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
-    plt.savefig(savefolder+"G1_boxplot",dpi=600)
+    plt.savefig(savefolder+"all_NRL_G1_boxplot",dpi=600)
 
 plt.figure(2)
 plt.boxplot(boxplot_G2, showfliers=False, positions=int_keys)
@@ -117,7 +117,7 @@ if depict_n:
     for n, loc in enumerate(NRLs_loc):
         plt.text(loc, ymax, " n = " + str(len(boxplot_k[n])), size=15, rotation=45, verticalalignment='bottom')
 if save:
-    plt.savefig(savefolder+"G2_boxplot",dpi=600)
+    plt.savefig(savefolder+"all_NRL_G2_boxplot",dpi=600)
 
 
 print("Total number of measurements... " + str(total))
