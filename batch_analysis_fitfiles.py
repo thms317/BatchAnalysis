@@ -15,7 +15,7 @@ def default_pars():
     pars['z0_nm'] = 0  # offset in nm / subunit
     pars['NRL'] = 197  # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
-    pars['type'] = "Xenopus_tailless"  # type of histone
+    pars['type'] = "Xenopus_WT"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
@@ -25,8 +25,8 @@ def default_pars():
 
 p = default_pars()
 
-fitfile_path = "C:\\Users\\brouw\\Desktop\\Data\\"
-data_path = "C:\\Users\\brouw\\Desktop\\Data\\181115\\"
+fitfile_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\"
+data_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\181115\\"
 
 plot_rot = True
 

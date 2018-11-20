@@ -15,7 +15,7 @@ def default_pars():
     pars['z0_nm'] = 0  # offset in nm / subunit
     pars['NRL'] = 197  # nucleosome repeat length
     pars['repeats'] = 16  # number of repeats
-    pars['type'] = "Xenopus_tailless"  # type of histone
+    pars['type'] = "Xenopus_WT"  # type of histone
     pars['NRL_str'] = str(pars['NRL'])+'x'+str(pars['repeats'])+'_'+pars['type']  # Nucleosome Repeat Length + #repeats
     pars['drift'] = []
     pars['save'] = True
@@ -28,8 +28,8 @@ p = default_pars()
 
 plt.close("all")
 
-data_path = "C:\\Users\\brouw\\Desktop\\Data\\181115\\"
-datx_file = "181115_197_tailless"
+data_path = "C:\\Users\\tbrouwer\\Desktop\\Data\\181115\\"
+datx_file = "181115_197_WT"
 
 measurements = ba.build_measurements(data_path, datx_file + ".datx", p)
 drift_arr = []
